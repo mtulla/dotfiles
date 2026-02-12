@@ -27,15 +27,9 @@ PIPENV_PYTHON="$PYENV_ROOT/shims/python"
 export PIPENV_PYTHON
 
 # Setup ruby with chruby
-{{ if .is_dd_laptop }}
 # source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
 # source /opt/homebrew/opt/chruby/share/chruby/auto.sh
 # chruby ruby-3.2.2
-{{ else }}
-source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
-source /opt/homebrew/opt/chruby/share/chruby/auto.sh
-chruby ruby-3.2.2
-{{ end }}
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
