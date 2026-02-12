@@ -16,5 +16,10 @@ config.native_macos_fullscreen_mode = true
 -- tokyonight_night coolnight colorscheme:
 config.color_scheme = "tokyonight_night"
 
+-- i hate that opt+return minimizes the window. also messes up claude code
+config.keys = {
+	{ key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment },
+}
+
 -- and finally, return the configuration to wezterm
 return config
