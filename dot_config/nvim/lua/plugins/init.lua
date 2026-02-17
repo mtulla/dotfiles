@@ -8,7 +8,6 @@ return {
       wk.add {
         { "<leader>e", group = "Explorer" },
         { "<leader>f", group = "Find" },
-        { "<leader>fg", group = "Find Git" },
         { "<leader>g", group = "Git" },
         { "<leader>d", group = "Debug / Diagnostics" },
         { "<leader>l", group = "LSP" },
@@ -126,7 +125,7 @@ return {
   },
   {
     "tpope/vim-fugitive",
-    enabled = false,
+    cmd = { "Git", "G", "Gvdiffsplit" },
   },
   {
     "ThePrimeagen/harpoon",
