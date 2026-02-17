@@ -130,6 +130,12 @@ end, { desc = "Commands" })
 map("n", "<leader>fd", function()
   snacks.picker.diagnostics()
 end, { desc = "Diagnostics" })
+map("n", "<leader>fs", function()
+  snacks.picker.lsp_symbols()
+end, { desc = "Document symbols" })
+map("n", "<leader>fS", function()
+  snacks.picker.lsp_workspace_symbols()
+end, { desc = "Workspace symbols" })
 
 -- ========== LSP ==========
 map("n", "gD", vim.lsp.buf.declaration, { desc = "Go to declaration" })
