@@ -61,6 +61,16 @@ map("n", "<leader>Q", "<cmd>qa<CR>", { desc = "Quit all" })
 map("n", "<leader>nh", "<cmd>nohl<CR>", { desc = "Clear search highlight" })
 map("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode", nowait = true, silent = true })
 
+-- ========== Copy filepath ==========
+map("n", "<leader>pr", function()
+  vim.fn.setreg("+", vim.fn.expand "%")
+  vim.notify("Copied: " .. vim.fn.expand "%")
+end, { desc = "Copy relative path" })
+map("n", "<leader>pa", function()
+  vim.fn.setreg("+", vim.fn.expand "%:p")
+  vim.notify("Copied: " .. vim.fn.expand "%:p")
+end, { desc = "Copy absolute path" })
+
 -- ========== Navigation (centered) ==========
 map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
 map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
