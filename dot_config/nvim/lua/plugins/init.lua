@@ -180,4 +180,9 @@ return {
       require "configs.dap-go"
     end,
   },
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+    opts = {},
+  },
 }

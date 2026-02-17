@@ -164,6 +164,12 @@ for i = 1, 9 do
   end, { desc = "Harpoon file " .. i, nowait = true, silent = true })
 end
 
+-- ========== Sessions (persistence.nvim) ==========
+map("n", "<leader>zs", function() require("persistence").load() end, { desc = "Restore session (cwd)" })
+map("n", "<leader>zS", function() require("persistence").select() end, { desc = "Select session" })
+map("n", "<leader>zl", function() require("persistence").load({ last = true }) end, { desc = "Restore last session" })
+map("n", "<leader>zd", function() require("persistence").stop() end, { desc = "Stop session recording" })
+
 -- ========== Debug (DAP) ==========
 map("n", "<F5>", function()
   require("dap").continue()
