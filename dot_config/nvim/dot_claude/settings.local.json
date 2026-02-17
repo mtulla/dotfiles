@@ -3,7 +3,10 @@
     "allow": [
       "Bash(ls:*)",
       "WebSearch",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:ricoberger.de)"
     ]
   }
 }
