@@ -98,8 +98,8 @@ map("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Close tab" })
 map("n", "<leader>tn", "<cmd>tabn<CR>", { desc = "Next tab" })
 map("n", "<leader>tp", "<cmd>tabp<CR>", { desc = "Previous tab" })
 map("n", "<leader>tf", "<cmd>tabnew %<CR>", { desc = "Buffer to tab" })
-map("n", "<S-h>", "<cmd>tabp<CR>", { desc = "Previous tab" })
-map("n", "<S-l>", "<cmd>tabn<CR>", { desc = "Next tab" })
+map("n", "<S-h>", function() require("nvchad.tabufline").prev() end, { desc = "Previous buffer" })
+map("n", "<S-l>", function() require("nvchad.tabufline").next() end, { desc = "Next buffer" })
 
 -- ========== Explorer & Find (snacks.nvim) ==========
 local snacks = require "snacks"
