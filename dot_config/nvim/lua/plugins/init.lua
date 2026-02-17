@@ -19,8 +19,9 @@ return {
         { "<leader>k", group = "Quickfix" },
         { "<leader>n", group = "Toggle" },
         { "<leader>c", group = "NvChad" },
-        { "<leader>p", group = "Pick" },
-      })
+        { "<leader>p", group = "Path" },
+        { "<leader>a", group = "AI" },
+      }
     end,
   },
   {
