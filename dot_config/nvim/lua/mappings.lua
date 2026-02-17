@@ -175,15 +175,59 @@ map("n", "<leader>0", function()
 end, { desc = "Harpoon add file" })
 
 map("n", "<leader><tab>", function()
-  harpoon.ui:toggle_quick_menu(harpoon:list())
-end, { desc = "Harpoon quick menu", nowait = true, silent = true })
+  require("utils.harpoon-picker").pick()
+end, { desc = "Harpoon picker", nowait = true, silent = true })
 
 map("n", "<tab>", function()
-  harpoon:list():next()
+  local list = harpoon:list()
+
+  -- Collect non-empty entries with their original indices
+  local valid = {}
+  for i = 1, list:length() do
+    local item = list.items[i]
+    if item and item.value and item.value ~= "" then
+      valid[#valid + 1] = { idx = i, value = item.value }
+    end
+  end
+  if #valid == 0 then return end
+
+  local current = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":.")
+  local current_pos = 0
+  for pos, entry in ipairs(valid) do
+    if entry.value == current then
+      current_pos = pos
+      break
+    end
+  end
+
+  local next_pos = (current_pos % #valid) + 1
+  list:select(valid[next_pos].idx)
 end, { desc = "Harpoon next file", nowait = true, silent = true })
 
 map("n", "<S-tab>", function()
-  harpoon:list():prev()
+  local list = harpoon:list()
+
+  -- Collect non-empty entries with their original indices
+  local valid = {}
+  for i = 1, list:length() do
+    local item = list.items[i]
+    if item and item.value and item.value ~= "" then
+      valid[#valid + 1] = { idx = i, value = item.value }
+    end
+  end
+  if #valid == 0 then return end
+
+  local current = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":.")
+  local current_pos = 0
+  for pos, entry in ipairs(valid) do
+    if entry.value == current then
+      current_pos = pos
+      break
+    end
+  end
+
+  local prev_pos = current_pos <= 1 and #valid or current_pos - 1
+  list:select(valid[prev_pos].idx)
 end, { desc = "Harpoon previous file", nowait = true, silent = true })
 
 for i = 1, 9 do
