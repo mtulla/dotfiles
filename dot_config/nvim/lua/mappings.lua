@@ -1,19 +1,47 @@
-require "nvchad.mappings"
-
--- Delete NvChad defaults we override
-local nomap = vim.keymap.del
-nomap("n", "<C-n>")
-nomap("n", "<leader>n")
-nomap("n", "<leader>ff")
-nomap("n", "<leader>fa")
-nomap("n", "<leader>fb")
-nomap("n", "<leader>fw")
-nomap("n", "<C-h>")
-nomap("n", "<C-j>")
-nomap("n", "<C-k>")
-nomap("n", "<C-l>")
-
+-- NvChad defaults we keep (cherry-picked from nvchad.mappings)
 local map = vim.keymap.set
+
+map("i", "<C-b>", "<ESC>^i", { desc = "Move to beginning of line" })
+map("i", "<C-e>", "<End>", { desc = "Move to end of line" })
+map("i", "<C-h>", "<Left>", { desc = "Move left" })
+map("i", "<C-l>", "<Right>", { desc = "Move right" })
+map("i", "<C-j>", "<Down>", { desc = "Move down" })
+map("i", "<C-k>", "<Up>", { desc = "Move up" })
+
+map("n", "<Esc>", "<cmd>noh<CR>", { desc = "Clear highlights" })
+map("n", "<C-s>", "<cmd>w<CR>", { desc = "Save file" })
+map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "Copy whole file" })
+map("n", "<leader>rn", "<cmd>set rnu!<CR>", { desc = "Toggle relative number" })
+map("n", "<leader>ch", "<cmd>NvCheatsheet<CR>", { desc = "NvChad cheatsheet" })
+map("n", "<leader>ds", vim.diagnostic.setloclist, { desc = "Diagnostic loclist" })
+map("n", "<leader>/", "gcc", { desc = "Toggle comment", remap = true })
+map("v", "<leader>/", "gc", { desc = "Toggle comment", remap = true })
+
+map("n", "<leader>th", function()
+  require("nvchad.themes").open()
+end, { desc = "NvChad themes" })
+
+map("t", "<C-x>", "<C-\\><C-N>", { desc = "Exit terminal mode" })
+map("n", "<leader>h", function()
+  require("nvchad.term").new { pos = "sp" }
+end, { desc = "New horizontal terminal" })
+map("n", "<leader>v", function()
+  require("nvchad.term").new { pos = "vsp" }
+end, { desc = "New vertical terminal" })
+map({ "n", "t" }, "<A-v>", function()
+  require("nvchad.term").toggle { pos = "vsp", id = "vtoggleTerm" }
+end, { desc = "Toggle vertical terminal" })
+map({ "n", "t" }, "<A-h>", function()
+  require("nvchad.term").toggle { pos = "sp", id = "htoggleTerm" }
+end, { desc = "Toggle horizontal terminal" })
+map({ "n", "t" }, "<A-i>", function()
+  require("nvchad.term").toggle { pos = "float", id = "floatTerm" }
+end, { desc = "Toggle floating terminal" })
+
+map("n", "<leader>wK", "<cmd>WhichKey <CR>", { desc = "WhichKey all keymaps" })
+map("n", "<leader>wk", function()
+  vim.cmd("WhichKey " .. vim.fn.input "WhichKey: ")
+end, { desc = "WhichKey query lookup" })
 
 -- ========== Tmux Navigation ==========
 map("n", "<C-h>", "<cmd>TmuxNavigateLeft<CR>", { desc = "Navigate left (tmux-aware)" })
