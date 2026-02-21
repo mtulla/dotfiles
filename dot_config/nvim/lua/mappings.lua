@@ -271,6 +271,32 @@ for i = 1, 9 do
   end, { desc = "Harpoon file " .. i, nowait = true, silent = true })
 end
 
+-- ========== Claude Code ==========
+map("n", "<leader>ac", "<cmd>ClaudeCode<cr>", { desc = "Toggle Claude" })
+map("n", "<leader>af", "<cmd>ClaudeCodeFocus<cr>", { desc = "Focus Claude" })
+map("n", "<leader>ar", "<cmd>ClaudeCode --resume<cr>", { desc = "Resume Claude" })
+map("n", "<leader>aC", "<cmd>ClaudeCode --continue<cr>", { desc = "Continue Claude" })
+map("n", "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", { desc = "Select Claude model" })
+map("n", "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", { desc = "Add current buffer" })
+map("v", "<leader>as", "<cmd>ClaudeCodeSend<cr>", { desc = "Send to Claude" })
+map("n", "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", { desc = "Accept diff" })
+map("n", "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", { desc = "Deny diff" })
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "NvimTree", "neo-tree", "oil", "minifiles", "netrw" },
+  callback = function()
+    map("n", "<leader>as", "<cmd>ClaudeCodeTreeAdd<cr>", { buffer = true, desc = "Add file" })
+  end,
+})
+
+-- ========== CodeBridge: Tmux ==========
+map("n", "<leader>at", "<cmd>CodeBridgeTmux<cr>", { desc = "Send file to Claude (tmux)" })
+map("v", "<leader>at", ":'<,'>CodeBridgeTmux<cr>", { desc = "Send selection to Claude (tmux)" })
+map("n", "<leader>aT", "<cmd>CodeBridgeTmuxAll<cr>", { desc = "Send all buffers (tmux)" })
+map("n", "<leader>ai", "<cmd>CodeBridgeTmuxInteractive<cr>", { desc = "Interactive prompt (tmux)" })
+map("n", "<leader>aD", "<cmd>CodeBridgeTmuxDiff<cr>", { desc = "Send git diff (tmux)" })
+map("n", "<leader>aR", "<cmd>CodeBridgeTmuxRecent<cr>", { desc = "Send recent files (tmux)" })
+map("n", "<leader>ae", "<cmd>CodeBridgeTmuxDiagnostics<cr>", { desc = "Send diagnostics (tmux)" })
+
 -- ========== Sessions (persistence.nvim) ==========
 map("n", "<leader>zs", function() require("persistence").load() end, { desc = "Restore session (cwd)" })
 map("n", "<leader>zS", function() require("persistence").select() end, { desc = "Select session" })
