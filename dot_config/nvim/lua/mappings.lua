@@ -153,6 +153,15 @@ map("n", "<leader>lh", "<cmd>lua vim.lsp.inlay_hint.enable(false)<CR>", { desc =
 map("n", "<leader>ls", "<cmd>lua vim.lsp.inlay_hint.enable(true)<CR>", { desc = "Show inlay hints" })
 map("n", "<leader>lr", "<cmd>LspRestart<CR>", { desc = "LSP restart" })
 
+-- ========== Format ==========
+map({ "n", "v" }, "<leader>mp", function()
+  require("conform").format {
+    lsp_fallback = true,
+    async = false,
+    timeout_ms = 10000,
+  }
+end, { desc = "Format file or range" })
+
 -- ========== Lazygit ==========
 map("n", "<leader>lg", function()
   snacks.lazygit()

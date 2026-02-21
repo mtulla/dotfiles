@@ -33,14 +33,4 @@ local options = {
   },
 }
 
-local conform = require "conform"
-
-vim.keymap.set({ "n", "v" }, "<leader>mp", function()
-  conform.format {
-    lsp_fallback = true,
-    async = false,
-    timeout_ms = 10000,
-  }
-end, { desc = "Conform - format file or range (in visual mode)" })
-
-conform.setup(options)
+require("conform").setup(options)
