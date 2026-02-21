@@ -18,8 +18,17 @@ vim.opt.relativenumber = true
 -- Enable mouse mode
 vim.o.mouse = "a"
 
--- Indentations
+-- Auto-save on every edit
 vim.opt.autowriteall = true
+vim.api.nvim_create_autocmd({ "InsertLeavePre", "TextChanged", "TextChangedP" }, {
+  callback = function()
+    if vim.bo.modifiable and not vim.bo.readonly then
+      vim.cmd "silent! update"
+    end
+  end,
+})
+
+-- Indentations
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
