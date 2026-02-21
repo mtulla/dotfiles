@@ -338,3 +338,10 @@ end, { desc = "Toggle debug UI" })
 -- ========== Quickfix ==========
 map("n", "<leader>kn", "<cmd>cnext<CR>", { desc = "Quickfix next", nowait = true, silent = true })
 map("n", "<leader>kN", "<cmd>cprevious<CR>", { desc = "Quickfix previous", nowait = true, silent = true })
+
+-- ========== Bazel ==========
+local bazel = require "configs.bazel"
+map("n", "<leader>bb", bazel.build, { desc = "Bazel build" })
+map("n", "<leader>bt", bazel.test, { desc = "Bazel test" })
+map("n", "<leader>by", bazel.yank, { desc = "Bazel yank target" })
+map("n", "<leader>bg", bazel.gazelle, { desc = "Bazel gazelle" })

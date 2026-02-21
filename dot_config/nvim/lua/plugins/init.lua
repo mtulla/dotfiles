@@ -20,6 +20,7 @@ return {
         { "<leader>c", group = "NvChad" },
         { "<leader>p", group = "Path" },
         { "<leader>a", group = "AI" },
+        { "<leader>b", group = "Bazel" },
       }
     end,
   },
