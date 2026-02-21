@@ -161,6 +161,29 @@ node() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. 
 npm() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npm "$@"; }
 npx() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npx "$@"; }
 
+if (( $+commands[fzf] )); then
+    # Set up fzf key bindings and fuzzy completion
+    source <(fzf --zsh)
+fi
+
+if (( $+commands[eza] )); then
+    # Replace ls with eza
+    alias ls='eza'
+    # Long format with headers and icons
+    alias ll='eza -l --header --icons'
+    # Long format including hidden files
+    alias la='eza -la --header --icons'
+    # Tree view shortcut
+    alias tree='eza --tree'
+fi
+
+if (( $+commands[zoxide] )); then
+    # init zoxide
+    eval "$(zoxide init zsh)"
+    # Replace cd with zoxide
+    alias cd='z'
+fi
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
