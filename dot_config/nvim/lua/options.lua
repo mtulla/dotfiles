@@ -92,4 +92,8 @@ vim.filetype.add {
   },
 }
 
+-- don't wrap lines
+vim.opt.wrap = false
+
+-- remove command line at the bottom when not in use
 vim.opt.cmdheight = 0
