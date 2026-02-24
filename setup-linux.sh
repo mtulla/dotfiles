@@ -399,7 +399,79 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 16. Set zsh as default shell
+# 16. SDKMAN
+# -----------------------------------------------------------------------------
+export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
+if [[ -d "$SDKMAN_DIR" ]]; then
+    success "SDKMAN already installed"
+else
+    info "Installing SDKMAN..."
+    curl -s "https://get.sdkman.io" | bash || error "Failed to install SDKMAN"
+fi
+
+# Source SDKMAN for this session
+# shellcheck disable=SC1091
+[[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+if command_exists java; then
+    success "Java already installed ($(java -version 2>&1 | head -1))"
+else
+    if command_exists sdk; then
+        info "Installing Java via SDKMAN..."
+        sdk install java 25.0.2-zulu || error "Failed to install Java"
+    else
+        warn "SDKMAN not available, skipping Java install"
+    fi
+fi
+
+# -----------------------------------------------------------------------------
+# 17. Bazel
+# -----------------------------------------------------------------------------
+if command_exists bazel; then
+    success "Bazel already installed"
+else
+    info "Installing Bazel via bazelisk..."
+    TMPDIR="$(mktemp -d)"
+    BZL_TAG="$(github_latest_tag bazelbuild/bazelisk)"
+    BZL_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BZL_TAG}/bazelisk-linux-${ARCH_GO}"
+    if curl -fsSL -o "${TMPDIR}/bazelisk" "$BZL_URL"; then
+        sudo install -m 755 "${TMPDIR}/bazelisk" /usr/local/bin/bazel
+        success "Bazel (bazelisk) installed"
+    else
+        error "Failed to download bazelisk. Install manually from https://github.com/bazelbuild/bazelisk/releases"
+    fi
+    rm -rf "$TMPDIR"
+fi
+
+# -----------------------------------------------------------------------------
+# 18. google-java-format
+# -----------------------------------------------------------------------------
+if command_exists google-java-format; then
+    success "google-java-format already installed"
+else
+    info "Installing google-java-format..."
+    TMPDIR="$(mktemp -d)"
+    GJF_TAG="$(github_latest_tag google/google-java-format)"
+    GJF_VER="${GJF_TAG#v}"
+    GJF_URL="https://github.com/google/google-java-format/releases/download/${GJF_TAG}/google-java-format-${GJF_VER}-all-deps.jar"
+    GJF_DIR="/usr/local/lib/google-java-format"
+    if curl -fsSL -o "${TMPDIR}/google-java-format.jar" "$GJF_URL"; then
+        sudo mkdir -p "$GJF_DIR"
+        sudo install -m 644 "${TMPDIR}/google-java-format.jar" "$GJF_DIR/google-java-format.jar"
+        sudo tee /usr/local/bin/google-java-format > /dev/null <<'WRAPPER'
+#!/usr/bin/env bash
+exec java -jar /usr/local/lib/google-java-format/google-java-format.jar "$@"
+WRAPPER
+        sudo chmod +x /usr/local/bin/google-java-format
+        success "google-java-format installed"
+    else
+        error "Failed to download google-java-format. Install manually from https://github.com/google/google-java-format/releases"
+    fi
+    rm -rf "$TMPDIR"
+fi
+
+# -----------------------------------------------------------------------------
+# 19. Set zsh as default shell
 # -----------------------------------------------------------------------------
 CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
 ZSH_PATH="$(which zsh)"
@@ -416,7 +488,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 17. Summary
+# 20. Summary
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗"

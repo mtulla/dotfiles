@@ -311,7 +311,53 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 16. Set zsh as default shell
+# 16. SDKMAN
+# -----------------------------------------------------------------------------
+export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
+if [[ -d "$SDKMAN_DIR" ]]; then
+    success "SDKMAN already installed"
+else
+    info "Installing SDKMAN..."
+    curl -s "https://get.sdkman.io" | bash || error "Failed to install SDKMAN"
+fi
+
+# Source SDKMAN for this session
+# shellcheck disable=SC1091
+[[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+if command_exists java; then
+    success "Java already installed ($(java -version 2>&1 | head -1))"
+else
+    if command_exists sdk; then
+        info "Installing Java via SDKMAN..."
+        sdk install java 25.0.2-zulu || error "Failed to install Java"
+    else
+        warn "SDKMAN not available, skipping Java install"
+    fi
+fi
+
+# -----------------------------------------------------------------------------
+# 17. Bazel
+# -----------------------------------------------------------------------------
+if brew list bazelisk &>/dev/null || command_exists bazel; then
+    success "Bazel (bazelisk) already installed"
+else
+    info "Installing Bazel via bazelisk..."
+    brew install bazelisk || error "Failed to install bazelisk"
+fi
+
+# -----------------------------------------------------------------------------
+# 18. google-java-format
+# -----------------------------------------------------------------------------
+if brew list google-java-format &>/dev/null; then
+    success "google-java-format already installed"
+else
+    info "Installing google-java-format..."
+    brew install google-java-format || error "Failed to install google-java-format"
+fi
+
+# -----------------------------------------------------------------------------
+# 19. Set zsh as default shell
 # -----------------------------------------------------------------------------
 CURRENT_SHELL="$(dscl . -read /Users/"$USER" UserShell | awk '{print $2}')"
 ZSH_PATH="$(which zsh)"
@@ -328,7 +374,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 17. Summary
+# 20. Summary
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗"
