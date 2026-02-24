@@ -117,6 +117,7 @@ local function bazel_package_command(subcmd)
 end
 
 -- Public API
+M.get_label = get_current_package_label
 M.build = bazel_package_command "build"
 M.test = bazel_package_command "test"
 

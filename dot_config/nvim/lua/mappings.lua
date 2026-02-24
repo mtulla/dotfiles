@@ -288,14 +288,60 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- ========== CodeBridge: Tmux ==========
-map("n", "<leader>at", "<cmd>CodeBridgeTmux<cr>", { desc = "Send file to Claude (tmux)" })
-map("v", "<leader>at", ":'<,'>CodeBridgeTmux<cr>", { desc = "Send selection to Claude (tmux)" })
-map("n", "<leader>aT", "<cmd>CodeBridgeTmuxAll<cr>", { desc = "Send all buffers (tmux)" })
-map("n", "<leader>ai", "<cmd>CodeBridgeTmuxInteractive<cr>", { desc = "Interactive prompt (tmux)" })
-map("n", "<leader>aD", "<cmd>CodeBridgeTmuxDiff<cr>", { desc = "Send git diff (tmux)" })
-map("n", "<leader>aR", "<cmd>CodeBridgeTmuxRecent<cr>", { desc = "Send recent files (tmux)" })
-map("n", "<leader>ae", "<cmd>CodeBridgeTmuxDiagnostics<cr>", { desc = "Send diagnostics (tmux)" })
+-- ========== Wiremux: Tmux ==========
+map("n", "<leader>at", function()
+  require("wiremux").send("{file}", { focus = true })
+end, { desc = "Send file to Claude (tmux)" })
+map("v", "<leader>at", function()
+  require("wiremux").send("{selection}", { focus = true })
+end, { desc = "Send selection to Claude (tmux)" })
+map("n", "<leader>aT", function()
+  local lines = {}
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name ~= "" then
+        local content = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
+        table.insert(lines, "--- " .. vim.fn.fnamemodify(name, ":.") .. " ---\n" .. content)
+      end
+    end
+  end
+  require("wiremux").send(table.concat(lines, "\n\n"), { focus = true })
+end, { desc = "Send all buffers (tmux)" })
+map("n", "<leader>ai", function()
+  require("wiremux").send({
+    { label = "Explain", value = "Explain {this}" },
+    { label = "Fix", value = "Can you fix {this}?" },
+    { label = "Review changes", value = "Can you review my changes?\n{changes}" },
+    { label = "Fix diagnostics", value = "Can you fix these diagnostics?\n{diagnostics_all}" },
+    { label = "Optimize", value = "How can {this} be optimized?" },
+    { label = "Write tests", value = "Can you write tests for {this}?" },
+  }, { focus = true })
+end, { desc = "Interactive prompt (tmux)" })
+map("n", "<leader>aD", function()
+  require("wiremux").send("{changes}", { focus = true })
+end, { desc = "Send git diff (tmux)" })
+map("n", "<leader>aR", function()
+  local recent = vim.v.oldfiles
+  local lines = {}
+  local cwd = vim.fn.getcwd()
+  for i, f in ipairs(recent) do
+    if i > 20 then break end
+    if vim.startswith(f, cwd) then
+      table.insert(lines, vim.fn.fnamemodify(f, ":."))
+    end
+  end
+  require("wiremux").send(table.concat(lines, "\n"), { focus = true })
+end, { desc = "Send recent files (tmux)" })
+map("n", "<leader>ae", function()
+  require("wiremux").send("{diagnostics_all}", { focus = true })
+end, { desc = "Send diagnostics (tmux)" })
+map("n", "<leader>aW", function()
+  require("wiremux").create()
+end, { desc = "Create wiremux target" })
+map("n", "<leader>aX", function()
+  require("wiremux").close()
+end, { desc = "Close wiremux target" })
 
 -- ========== Sessions (persistence.nvim) ==========
 map("n", "<leader>zs", function() require("persistence").load() end, { desc = "Restore session (cwd)" })
@@ -345,3 +391,12 @@ map("n", "<leader>bb", bazel.build, { desc = "Bazel build" })
 map("n", "<leader>bt", bazel.test, { desc = "Bazel test" })
 map("n", "<leader>by", bazel.yank, { desc = "Bazel yank target" })
 map("n", "<leader>bg", bazel.gazelle, { desc = "Bazel gazelle" })
+map("n", "<leader>bs", function()
+  local label = bazel.get_label()
+  if not label then return end
+  require("wiremux").send({
+    { label = "Build target", value = "bazel build " .. label },
+    { label = "Test target", value = "bazel test " .. label },
+    { label = "Target label", value = label },
+  }, { focus = true })
+end, { desc = "Send bazel target (tmux)" })

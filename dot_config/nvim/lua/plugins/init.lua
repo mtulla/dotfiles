@@ -195,10 +195,18 @@ return {
     opts = {},
   },
   {
-    "samir-roy/code-bridge.nvim",
+    "MSmaili/wiremux.nvim",
     event = "VeryLazy",
     config = function()
-      require("code-bridge").setup()
+      require("wiremux").setup {
+        picker = { adapter = "vim.ui.select" },
+        targets = {
+          definitions = {
+            claude = { cmd = "claude", kind = "pane", split = "horizontal", shell = false },
+            shell = { kind = "pane", split = "horizontal" },
+          },
+        },
+      }
     end,
   },
 }
