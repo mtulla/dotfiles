@@ -78,6 +78,9 @@ return {
 
         -- Go
         "gopls",
+
+        -- Java
+        "google-java-format",
       },
     },
   },
@@ -102,6 +105,7 @@ return {
         "json",
         "yaml",
         "markdown",
+        "java",
       },
     },
   },

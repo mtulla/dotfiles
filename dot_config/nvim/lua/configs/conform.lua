@@ -12,6 +12,7 @@ local options = {
     typescriptreact = { "prettier" },
     javascriptreact = { "prettier" },
     go = { "gofumpt", "goimports" },
+    java = { "google-java-format" },
   },
 
   formatters = {
@@ -24,6 +25,11 @@ local options = {
       command = "ruff",
       args = { "format", "--stdin-filename", "$FILENAME", "-" },
       stdin = true,
+    },
+    ["google-java-format"] = {
+      env = {
+        JAVA_HOME = vim.fn.expand "~/.sdkman/candidates/java/current",
+      },
     },
   },
 

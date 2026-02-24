@@ -135,4 +135,8 @@ M.gazelle = function()
   run_in_terminal "bazel run //:gazelle"
 end
 
+M.format_java = function()
+  run_in_terminal "bzl run //rules/format:format_java"
+end
+
 return M
