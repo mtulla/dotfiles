@@ -21,5 +21,15 @@ config.keys = {
 	{ key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment },
 }
 
+-- add the ability to move wezterm tabs with CRTL+ALT + number
+for i = 1, 8 do
+	-- CTRL+ALT + number to move to that position
+	table.insert(config.keys, {
+		key = tostring(i),
+		mods = "CTRL|ALT",
+		action = wezterm.action.MoveTab(i - 1),
+	})
+end
+
 -- and finally, return the configuration to wezterm
 return config
