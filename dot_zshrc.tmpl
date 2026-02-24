@@ -348,7 +348,11 @@ dd-curl() {
 
 alias dd-api-key="dd-auth -o | grep DD_API_KEY | cut -d= -f2 | pbcopy && echo 'DD_API_KEY copied to clipboard'"
 alias dd-app-key="dd-auth -o | grep DD_APP_KEY | cut -d= -f2 | pbcopy && echo 'DD_APP_KEY copied to clipboard'"
-{{ end }}
+{{ end }}-
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 # Uncomment line to profile zsh startup.
 # zprof
