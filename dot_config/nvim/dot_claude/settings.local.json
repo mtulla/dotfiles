@@ -12,7 +12,8 @@
       "mcp__github__search_code",
       "WebFetch(domain:drake.mit.edu)",
       "WebFetch(domain:earthly.dev)",
-      "WebFetch(domain:bazel.build)"
+      "WebFetch(domain:bazel.build)",
+      "Bash(nvim:*)"
     ]
   }
 }
