@@ -230,6 +230,14 @@ fi
 # 11. CLI tools (eza, lazygit, zoxide)
 # -----------------------------------------------------------------------------
 
+# bat
+if command_exists bat || command_exists batcat; then
+    success "bat already installed"
+else
+    info "Installing bat..."
+    sudo apt install -y bat || error "Failed to install bat"
+fi
+
 # eza — download binary from GitHub releases
 if command_exists eza; then
     success "eza already installed"

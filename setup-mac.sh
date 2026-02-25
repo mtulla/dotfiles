@@ -191,7 +191,7 @@ fi
 # -----------------------------------------------------------------------------
 # 11. CLI tools (eza, lazygit, zoxide)
 # -----------------------------------------------------------------------------
-CLI_TOOLS=(eza lazygit zoxide)
+CLI_TOOLS=(bat eza lazygit zoxide)
 
 for tool in "${CLI_TOOLS[@]}"; do
     if brew list "$tool" &>/dev/null; then
