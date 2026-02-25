@@ -220,16 +220,15 @@ lspconfig.rust_analyzer.setup {
 
 -- Go
 local util = require "lspconfig.util"
+local gopls_cmd = vim.fn.executable("dd-gopls") == 1 and { "dd-gopls" } or { "gopls" }
+local gopls_env = vim.fn.executable("dd-gopls") == 1 and { GOPLS_DISABLE_MODULE_LOADS = "1" } or {}
 
 lspconfig.gopls.setup {
   on_attach = on_attach,
   on_init = on_init,
   capabilities = capabilities,
-  cmd = { "dd-gopls" },
-  cmd_env = {
-    GOPACKAGESDRIVER_BAZEL = "bzl",
-    GOPLS_DISABLE_MODULE_LOADS = "1",
-  },
+  cmd = gopls_cmd,
+  cmd_env = gopls_env,
   filetypes = { "go", "gomod", "gowork", "gotmpl" },
   root_dir = util.root_pattern("go.work", "go.mod", ".git"),
   settings = {
