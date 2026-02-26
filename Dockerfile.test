@@ -13,4 +13,4 @@ RUN apt-get update && \
 USER testuser
 WORKDIR /home/testuser
 
-CMD ["sh", "-c", "curl -fsLS get.chezmoi.io | sh -s -- init --apply --branch testing mtulla"]
+CMD ["sh", "-c", "curl -fsLS get.chezmoi.io | sh -s -- init --apply --promptBool 'is_dd_laptop=false' --branch testing mtulla"]
