@@ -9,7 +9,11 @@ install_node() {
     # nvm.sh references unbound variables
     set +u
     # shellcheck disable=SC1091
+{{ if eq .chezmoi.os "darwin" -}}
+    [[ -s "/opt/homebrew/opt/nvm/nvm.sh" ]] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+{{ else -}}
     [[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"
+{{ end -}}
 
     if command_exists node; then
         success "Node.js already installed ($(node --version))"

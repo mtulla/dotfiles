@@ -18,6 +18,14 @@ install_rust() {
 
 # --- nvm ---
 install_nvm() {
+{{ if eq .chezmoi.os "darwin" -}}
+    if brew list nvm &>/dev/null; then
+        success "nvm already installed"
+    else
+        info "Installing nvm..."
+        brew install nvm || return 1
+    fi
+{{ else -}}
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
     if [[ -d "$NVM_DIR" ]] && [[ -s "$NVM_DIR/nvm.sh" ]]; then
         success "nvm already installed"
@@ -26,6 +34,7 @@ install_nvm() {
         mkdir -p "$NVM_DIR"
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash || return 1
     fi
+{{ end -}}
 }
 
 # --- SDKMAN ---

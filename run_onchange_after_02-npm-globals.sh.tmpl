@@ -7,7 +7,11 @@ set -euo pipefail
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 set +u
 # shellcheck disable=SC1091
+{{ if eq .chezmoi.os "darwin" -}}
+[[ -s "/opt/homebrew/opt/nvm/nvm.sh" ]] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+{{ else -}}
 [[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"
+{{ end -}}
 set -u
 
 if ! command_exists npm; then
