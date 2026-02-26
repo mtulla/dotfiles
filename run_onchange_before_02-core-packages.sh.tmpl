@@ -7,7 +7,7 @@ set -euo pipefail
 # macOS core packages via Homebrew
 
 install_core() {
-    local packages=(zsh git neovim tmux fzf ripgrep golang)
+    local packages=(zsh git neovim tmux fzf ripgrep go)
     for pkg in "${packages[@]}"; do
         if brew list "$pkg" &>/dev/null; then
             success "$pkg already installed"
