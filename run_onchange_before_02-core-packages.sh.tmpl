@@ -1,0 +1,111 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+{{ if eq .chezmoi.os "darwin" -}}
+# macOS core packages via Homebrew
+
+install_core() {
+    local packages=(zsh git neovim tmux fzf ripgrep golang)
+    for pkg in "${packages[@]}"; do
+        if brew list "$pkg" &>/dev/null; then
+            success "$pkg already installed"
+        else
+            info "Installing $pkg..."
+            brew install "$pkg" || return 1
+        fi
+    done
+}
+
+install_build_deps() {
+    local packages=(openssl readline sqlite3 xz zlib tcl-tk)
+    for pkg in "${packages[@]}"; do
+        if brew list "$pkg" &>/dev/null; then
+            success "$pkg already installed"
+        else
+            info "Installing $pkg..."
+            brew install "$pkg" || return 1
+        fi
+    done
+}
+
+install_extras() {
+    for pkg in pipx bat zoxide; do
+        if brew list "$pkg" &>/dev/null; then
+            success "$pkg already installed"
+        else
+            info "Installing $pkg..."
+            brew install "$pkg" || return 1
+        fi
+    done
+}
+
+{{ else -}}
+# Linux core packages via apt
+
+install_core() {
+    local packages=(
+        zsh git curl neovim tmux fzf ripgrep
+        unzip zip fontconfig golang-go
+    )
+    for pkg in "${packages[@]}"; do
+        if dpkg -s "$pkg" &>/dev/null; then
+            success "$pkg already installed"
+        else
+            info "Installing $pkg..."
+            sudo apt install -y "$pkg" || return 1
+        fi
+    done
+}
+
+install_build_deps() {
+    local packages=(
+        build-essential libssl-dev zlib1g-dev libbz2-dev
+        libreadline-dev libsqlite3-dev libncursesw5-dev
+        xz-utils tk-dev libxml2-dev libxmlsec1-dev
+        libffi-dev liblzma-dev
+    )
+    for pkg in "${packages[@]}"; do
+        if dpkg -s "$pkg" &>/dev/null; then
+            success "$pkg already installed"
+        else
+            info "Installing $pkg..."
+            sudo apt install -y "$pkg" || return 1
+        fi
+    done
+}
+
+install_extras() {
+    # pipx
+    if dpkg -s pipx &>/dev/null || command_exists pipx; then
+        success "pipx already installed"
+    else
+        info "Installing pipx..."
+        sudo apt install -y pipx || return 1
+    fi
+
+    # bat (Debian/Ubuntu package name is 'bat', binary may be 'batcat')
+    if command_exists bat || command_exists batcat; then
+        success "bat already installed"
+    else
+        info "Installing bat..."
+        sudo apt install -y bat || return 1
+    fi
+
+    # zoxide
+    if dpkg -s zoxide &>/dev/null || command_exists zoxide; then
+        success "zoxide already installed"
+    else
+        info "Installing zoxide..."
+        sudo apt install -y zoxide || return 1
+    fi
+}
+
+{{ end -}}
+
+run_install install_core       "Core packages"
+run_install install_build_deps "Build dependencies"
+run_install install_extras     "Extra CLI tools (pipx, bat, zoxide)"
+
+print_summary

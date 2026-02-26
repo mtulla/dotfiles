@@ -1,0 +1,139 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+# --- Node.js via nvm ---
+install_node() {
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # nvm.sh references unbound variables
+    set +u
+    # shellcheck disable=SC1091
+    [[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"
+
+    if command_exists node; then
+        success "Node.js already installed ($(node --version))"
+        set -u
+    else
+        if command_exists nvm; then
+            info "Installing Node.js LTS via nvm..."
+            nvm install --lts || { set -u; return 1; }
+            nvm use --lts || { set -u; return 1; }
+            set -u
+        else
+            set -u
+            warn "nvm not available, skipping Node.js"
+            return 1
+        fi
+    fi
+}
+
+# --- Java via SDKMAN ---
+install_java() {
+    export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
+    if [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]]; then
+        set +u
+        # shellcheck disable=SC1091
+        source "$SDKMAN_DIR/bin/sdkman-init.sh"
+        set -u
+    fi
+
+    if command_exists java; then
+        success "Java already installed ($(java -version 2>&1 | head -1))"
+    else
+        if command_exists sdk; then
+            info "Installing Java via SDKMAN..."
+            set +u
+            sdk install java 25.0.2-zulu || { set -u; return 1; }
+            set -u
+        else
+            warn "SDKMAN not available, skipping Java"
+            return 1
+        fi
+    fi
+}
+
+# --- Go tools ---
+install_go_tools() {
+    export GOPATH="${GOPATH:-$HOME/go}"
+    export PATH="$GOPATH/bin:$PATH"
+
+    if ! command_exists go; then
+        warn "Go not available, skipping Go tools"
+        return 1
+    fi
+
+    # Determine Go minor version to pick compatible tool versions
+    local go_ver go_minor
+    go_ver="$(go env GOVERSION)"  # e.g., go1.18.1
+    go_minor="${go_ver#go1.}"
+    go_minor="${go_minor%%.*}"
+
+    local tools=()
+    if (( go_minor >= 22 )); then
+        tools=(
+            "mvdan.cc/gofumpt@latest"
+            "golang.org/x/tools/cmd/goimports@latest"
+        )
+    else
+        warn "Go ${go_ver} is old; installing pinned compatible tool versions"
+        tools=(
+            "mvdan.cc/gofumpt@v0.4.0"
+            "golang.org/x/tools/cmd/goimports@v0.14.0"
+        )
+    fi
+
+    for tool in "${tools[@]}"; do
+        local tool_name
+        tool_name="$(basename "${tool%%@*}")"
+        if command_exists "$tool_name"; then
+            success "go: $tool_name already installed"
+        else
+            info "Installing go tool: $tool_name..."
+            go install "$tool" || return 1
+        fi
+    done
+}
+
+# --- stylua via cargo ---
+install_stylua() {
+    if command_exists stylua; then
+        success "stylua already installed"
+        return 0
+    fi
+
+    # shellcheck disable=SC1091
+    [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+    if command_exists cargo; then
+        info "Installing stylua via cargo..."
+        cargo install stylua || return 1
+    else
+        warn "cargo not available, skipping stylua"
+        return 1
+    fi
+}
+
+# --- ruff via pipx ---
+install_ruff() {
+    if command_exists ruff; then
+        success "ruff already installed"
+        return 0
+    fi
+
+    if command_exists pipx; then
+        info "Installing ruff via pipx..."
+        pipx install ruff || return 1
+    else
+        warn "pipx not available, skipping ruff"
+        return 1
+    fi
+}
+
+run_install install_node     "Node.js (via nvm)"
+run_install install_java     "Java (via SDKMAN)"
+run_install install_go_tools "Go tools (gofumpt, goimports)"
+run_install install_stylua   "stylua"
+run_install install_ruff     "ruff"
+
+print_summary
