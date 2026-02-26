@@ -111,8 +111,18 @@ install_extras() {
 
 {{ end -}}
 
+install_claude() {
+    if command_exists claude; then
+        success "Claude Code already installed"
+    else
+        info "Installing Claude Code..."
+        curl -fsSL https://claude.ai/install.sh | bash
+    fi
+}
+
 run_install install_core       "Core packages"
 run_install install_build_deps "Build dependencies"
 run_install install_extras     "Extra CLI tools (pipx, bat, zoxide)"
+run_install install_claude     "Claude Code"
 
 print_summary
