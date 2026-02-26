@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+current_user="${USER:-$(whoami)}"
+
+{{ if eq .chezmoi.os "darwin" -}}
+current_shell="$(dscl . -read /Users/"$current_user" UserShell | awk '{print $2}')"
+{{ else -}}
+current_shell="$(getent passwd "$current_user" | cut -d: -f7)"
+{{ end -}}
+
+zsh_path="$(which zsh 2>/dev/null || true)"
+
+if [[ -z "$zsh_path" ]]; then
+    error "zsh not found in PATH"
+    exit 1
+fi
+
+if [[ "$current_shell" == *zsh* ]]; then
+    success "Default shell is already zsh"
+else
+    info "Setting zsh as default shell..."
+    if ! grep -qF "$zsh_path" /etc/shells; then
+        echo "$zsh_path" | sudo tee -a /etc/shells
+    fi
+    chsh -s "$zsh_path" || { error "chsh failed"; exit 1; }
+    success "Default shell set to zsh"
+fi

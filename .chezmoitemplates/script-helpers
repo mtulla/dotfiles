@@ -1,0 +1,48 @@
+# === Shared helpers (inlined by chezmoi into each run_onchange_ script) =======
+
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+RESET='\033[0m'
+
+info()    { echo -e "${BOLD}[INFO]${RESET} $*"; }
+success() { echo -e "${GREEN}[OK]${RESET}   $*"; }
+warn()    { echo -e "${YELLOW}[SKIP]${RESET} $*"; }
+error()   { echo -e "${RED}[ERR]${RESET}  $*"; }
+
+command_exists() { command -v "$1" &>/dev/null; }
+
+FAILED_INSTALLS=()
+SUCCEEDED_INSTALLS=()
+
+run_install() {
+    local func_name="$1"
+    local description="${2:-$func_name}"
+    echo ""
+    info "--- ${description} ---"
+    if "$func_name"; then
+        SUCCEEDED_INSTALLS+=("$description")
+    else
+        error "FAILED: ${description}"
+        FAILED_INSTALLS+=("$description")
+    fi
+}
+
+print_summary() {
+    echo ""
+    if [[ ${#SUCCEEDED_INSTALLS[@]} -gt 0 ]]; then
+        echo -e "${GREEN}Succeeded:${RESET}"
+        for item in "${SUCCEEDED_INSTALLS[@]}"; do
+            echo -e "  ${GREEN}✓${RESET} ${item}"
+        done
+    fi
+    if [[ ${#FAILED_INSTALLS[@]} -gt 0 ]]; then
+        echo ""
+        echo -e "${RED}Failed:${RESET}"
+        for item in "${FAILED_INSTALLS[@]}"; do
+            echo -e "  ${RED}✗${RESET} ${item}"
+        done
+    fi
+    echo ""
+}

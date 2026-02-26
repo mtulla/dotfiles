@@ -1,0 +1,58 @@
+# Managed by chezmoi — declarative external dependencies.
+# Downloaded on first `chezmoi apply`; use `chezmoi apply --force` to refresh.
+#
+# GitHub archive URLs contain a top-level directory (e.g., "ohmyzsh-master/"),
+# so stripComponents = 1 is needed to place contents directly in the target path.
+
+[".oh-my-zsh"]
+    type = "archive"
+    url = "https://github.com/ohmyzsh/ohmyzsh/archive/master.tar.gz"
+    stripComponents = 1
+
+[".oh-my-zsh/custom/plugins/zsh-autosuggestions"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz"
+    stripComponents = 1
+
+[".oh-my-zsh/custom/plugins/zsh-syntax-highlighting"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/master.tar.gz"
+    stripComponents = 1
+
+[".oh-my-zsh/custom/themes/powerlevel10k"]
+    type = "archive"
+    url = "https://github.com/romkatv/powerlevel10k/archive/master.tar.gz"
+    stripComponents = 1
+
+[".tmux/plugins/tpm"]
+    type = "archive"
+    url = "https://github.com/tmux-plugins/tpm/archive/master.tar.gz"
+    stripComponents = 1
+
+{{ if eq .chezmoi.os "linux" -}}
+# Linux-only: fonts and CLI binaries (macOS uses brew for these)
+
+[".local/share/fonts"]
+    type = "archive"
+    url = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.zip"
+
+{{ $ezaVersion := (gitHubLatestRelease "eza-community/eza").TagName -}}
+[".local/bin/eza"]
+    type = "archive-file"
+    url = "https://github.com/eza-community/eza/releases/download/{{ $ezaVersion }}/eza_{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}aarch64{{ end }}-unknown-linux-gnu.tar.gz"
+    path = "eza"
+    executable = true
+
+{{ $lazygitVersion := (gitHubLatestRelease "jesseduffield/lazygit").TagName -}}
+{{ $lazygitVersionClean := trimPrefix "v" $lazygitVersion -}}
+[".local/bin/lazygit"]
+    type = "archive-file"
+    url = "https://github.com/jesseduffield/lazygit/releases/download/{{ $lazygitVersion }}/lazygit_{{ $lazygitVersionClean }}_Linux_{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}arm64{{ end }}.tar.gz"
+    path = "lazygit"
+    executable = true
+
+[".local/bin/bazel"]
+    type = "file"
+    url = "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-{{ .chezmoi.arch }}"
+    executable = true
+{{ end -}}

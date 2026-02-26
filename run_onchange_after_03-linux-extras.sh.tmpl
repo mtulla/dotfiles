@@ -1,0 +1,60 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+# Helper to get latest GitHub release tag
+github_latest_tag() {
+    curl -fsSL "https://api.github.com/repos/$1/releases/latest" \
+        | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/'
+}
+
+install_google_java_format() {
+    if command_exists google-java-format; then
+        success "google-java-format already installed"
+        return 0
+    fi
+
+    info "Installing google-java-format..."
+    local tmpdir tag ver url gjf_dir
+    tmpdir="$(mktemp -d)"
+    tag="$(github_latest_tag google/google-java-format)" || { rm -rf "$tmpdir"; return 1; }
+    ver="${tag#v}"
+    url="https://github.com/google/google-java-format/releases/download/${tag}/google-java-format-${ver}-all-deps.jar"
+    gjf_dir="$HOME/.local/lib/google-java-format"
+
+    if curl -fsSL -o "${tmpdir}/google-java-format.jar" "$url"; then
+        mkdir -p "$gjf_dir"
+        install -m 644 "${tmpdir}/google-java-format.jar" "$gjf_dir/google-java-format.jar"
+
+        mkdir -p "$HOME/.local/bin"
+        cat > "$HOME/.local/bin/google-java-format" <<'WRAPPER'
+#!/usr/bin/env bash
+exec java -jar "$HOME/.local/lib/google-java-format/google-java-format.jar" "$@"
+WRAPPER
+        chmod +x "$HOME/.local/bin/google-java-format"
+        success "google-java-format installed"
+    else
+        error "Failed to download google-java-format"
+        rm -rf "$tmpdir"
+        return 1
+    fi
+    rm -rf "$tmpdir"
+}
+
+update_font_cache() {
+    if command_exists fc-cache; then
+        info "Updating font cache..."
+        fc-cache -f "$HOME/.local/share/fonts" || return 1
+        success "Font cache updated"
+    else
+        warn "fc-cache not available, skipping font cache update"
+    fi
+}
+
+run_install install_google_java_format "google-java-format"
+run_install update_font_cache          "Font cache"
+
+print_summary
+{{ end -}}

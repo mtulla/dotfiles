@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# Build and run the Linux setup script inside a Docker container.
+# Build and run dotfiles setup inside a Docker container via chezmoi.
 # Usage: ./test-setup.sh [--no-cache] [-i|--interactive]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,7 +24,7 @@ docker build \
     "$SCRIPT_DIR" || exit 1
 
 echo ""
-echo "==> Running setup-linux.sh in container..."
+echo "==> Running chezmoi init --apply in container..."
 tty_flag=()
 if [ -t 0 ]; then
     tty_flag=("-it")
@@ -32,6 +32,6 @@ fi
 
 run_cmd=()
 if [ "$interactive" = true ]; then
-    run_cmd=(bash -c "/home/testuser/setup-linux.sh; exec zsh")
+    run_cmd=(sh -c "curl -fsLS get.chezmoi.io | sh -s -- init --apply --branch testing mtulla && exec zsh")
 fi
 docker run --rm "${tty_flag[@]}" "$IMAGE_NAME" "${run_cmd[@]}"

@@ -1,0 +1,34 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+# macOS-only extras installed via Homebrew
+
+install_brew_extras() {
+    local packages=(eza lazygit bazelisk google-java-format gofumpt goimports)
+    for pkg in "${packages[@]}"; do
+        if brew list "$pkg" &>/dev/null; then
+            success "$pkg already installed"
+        else
+            info "Installing $pkg..."
+            brew install "$pkg" || return 1
+        fi
+    done
+}
+
+install_meslo_font() {
+    if brew list --cask font-meslo-lg-nerd-font &>/dev/null; then
+        success "MesloLGS Nerd Font already installed"
+    else
+        info "Installing MesloLGS Nerd Font..."
+        brew install --cask font-meslo-lg-nerd-font || return 1
+    fi
+}
+
+run_install install_brew_extras "Brew extras (eza, lazygit, bazelisk, google-java-format, gofumpt, goimports)"
+run_install install_meslo_font  "MesloLGS Nerd Font"
+
+print_summary
+{{ end -}}

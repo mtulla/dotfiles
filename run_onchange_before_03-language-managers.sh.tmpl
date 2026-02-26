@@ -1,0 +1,67 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+# --- Rust (rustup) ---
+install_rust() {
+    if command_exists rustup; then
+        success "Rust (rustup) already installed"
+    else
+        info "Installing Rust via rustup..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || return 1
+    fi
+    # Ensure cargo is in PATH for this session
+    # shellcheck disable=SC1091
+    [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+}
+
+# --- nvm ---
+install_nvm() {
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    if [[ -d "$NVM_DIR" ]] && [[ -s "$NVM_DIR/nvm.sh" ]]; then
+        success "nvm already installed"
+    else
+        info "Installing nvm..."
+        mkdir -p "$NVM_DIR"
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash || return 1
+    fi
+}
+
+# --- SDKMAN ---
+install_sdkman() {
+    export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
+    if [[ -d "$SDKMAN_DIR" ]]; then
+        success "SDKMAN already installed"
+    else
+        info "Installing SDKMAN..."
+        curl -s "https://get.sdkman.io" | bash || return 1
+    fi
+}
+
+# --- pyenv ---
+install_pyenv() {
+{{ if eq .chezmoi.os "darwin" -}}
+    if command_exists pyenv; then
+        success "pyenv already installed"
+    else
+        info "Installing pyenv..."
+        brew install pyenv || return 1
+    fi
+{{ else -}}
+    export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
+    if command_exists pyenv || [[ -d "$PYENV_ROOT" ]]; then
+        success "pyenv already installed"
+    else
+        info "Installing pyenv..."
+        curl -fsSL https://pyenv.run | bash || return 1
+    fi
+{{ end -}}
+}
+
+run_install install_rust   "Rust (rustup)"
+run_install install_nvm    "nvm"
+run_install install_sdkman "SDKMAN"
+run_install install_pyenv  "pyenv"
+
+print_summary

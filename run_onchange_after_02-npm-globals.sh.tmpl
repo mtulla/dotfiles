@@ -1,0 +1,32 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ template "script-helpers" }}
+
+# Source nvm so npm is available
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+set +u
+# shellcheck disable=SC1091
+[[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"
+set -u
+
+if ! command_exists npm; then
+    warn "npm not available, skipping global npm packages"
+    exit 0
+fi
+
+install_npm_globals() {
+    local packages=(prettier fixjson)
+    for pkg in "${packages[@]}"; do
+        if npm list -g "$pkg" &>/dev/null; then
+            success "npm: $pkg already installed"
+        else
+            info "Installing npm global: $pkg..."
+            npm install -g "$pkg" || return 1
+        fi
+    done
+}
+
+run_install install_npm_globals "npm globals (prettier, fixjson)"
+
+print_summary
