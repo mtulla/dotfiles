@@ -45,6 +45,13 @@ install_extras() {
 # Linux core packages via apt
 
 install_core() {
+    # Add neovim unstable PPA (apt ships 0.6.1 on 22.04, need >= 0.8 for lazy.nvim)
+    if ! grep -rq "neovim-ppa" /etc/apt/sources.list.d/ 2>/dev/null; then
+        info "Adding neovim PPA..."
+        sudo add-apt-repository -y ppa:neovim-ppa/unstable
+        sudo apt-get update -qq
+    fi
+
     local packages=(
         zsh git curl neovim tmux fzf ripgrep
         unzip zip fontconfig golang-go
