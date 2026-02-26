@@ -1,0 +1,4 @@
+Dockerfile.test
+test-setup.sh
+setup-linux.sh
+setup-mac.sh

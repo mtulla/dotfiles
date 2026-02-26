@@ -1,0 +1,18 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+# Create a non-root user (setup-linux.sh refuses to run as root)
+RUN apt-get update && \
+    apt-get install -y sudo tzdata && \
+    useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER testuser
+WORKDIR /home/testuser
+
+COPY --chown=testuser:testuser setup-linux.sh /home/testuser/setup-linux.sh
+RUN chmod +x /home/testuser/setup-linux.sh
+
+CMD ["bash", "/home/testuser/setup-linux.sh"]

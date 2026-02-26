@@ -5,7 +5,7 @@
 # https://scottspence.com/posts/speeding-up-my-zsh-shell
 DISABLE_AUTO_UPDATE="true"
 DISABLE_MAGIC_FUNCTIONS="true"
-DISABLE_COMPFIX="true"
+ZSH_DISABLE_COMPFIX="true"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
@@ -14,8 +14,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+# Ensure ~/bin and ~/.local/bin are in PATH (used by chezmoi, pipx, etc.)
+PATH="$HOME/bin:$HOME/.local/bin:${PATH}"
 # Add homebrew to PATH.
 PATH="/opt/homebrew/bin:${PATH}"
 PATH="/usr/local/opt/python/libexec/bin:$PATH"
@@ -110,6 +110,10 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search vi-mode)
 
+{{ if .is_dd_laptop -}}
+# Bazel completions - must be in fpath before OMZ's compinit
+fpath+=("/opt/homebrew/share/zsh/site-functions")
+{{ end -}}
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
@@ -164,8 +168,10 @@ node() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. 
 npm() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npm "$@"; }
 npx() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npx "$@"; }
 
-if (( $+commands[fzf] )); then
-    # Set up fzf key bindings and fuzzy completion
+# fzf key bindings and fuzzy completion (cached by chezmoi apply)
+if [[ -f "$HOME/.cache/zsh/fzf.zsh" ]]; then
+    source "$HOME/.cache/zsh/fzf.zsh"
+elif (( $+commands[fzf] )); then
     source <(fzf --zsh)
 fi
 
@@ -180,10 +186,12 @@ if (( $+commands[eza] )); then
     alias tree='eza --tree'
 fi
 
-if (( $+commands[zoxide] )); then
-    # init zoxide
+# zoxide init (cached by chezmoi apply)
+if [[ -f "$HOME/.cache/zsh/zoxide.zsh" ]]; then
+    source "$HOME/.cache/zsh/zoxide.zsh"
+    alias cd='z'
+elif (( $+commands[zoxide] )); then
     eval "$(zoxide init zsh)"
-    # Replace cd with zoxide
     alias cd='z'
 fi
 
@@ -193,7 +201,11 @@ fi
 {{ if .is_dd_laptop }}
 # BEGIN ANSIBLE MANAGED BLOCK
 # Load homebrew shell variables
-eval "$(/opt/homebrew/bin/brew shellenv)"
+export HOMEBREW_PREFIX="/opt/homebrew"
+export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+export HOMEBREW_REPOSITORY="/opt/homebrew"
+[ -z "${MANPATH-}" ] || export MANPATH=":${MANPATH#:}"
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
 
 # Force certain more-secure behaviours from homebrew
 export HOMEBREW_NO_INSECURE_REDIRECT=1
@@ -244,18 +256,6 @@ export GONOSUMDB=github.com/DataDog,go.ddbuild.io
 # END ANSIBLE MANAGED BLOCK
 
 
-# GitLab Token Setup
-# https://datadoghq.atlassian.net/wiki/spaces/EE1/pages/3334865731/Gitlab+Token+Setup
-export GITLAB_TOKEN=$(security find-generic-password -a ${USER} -s gitlab_token -w)
-
-
-# Bazel Autocompletion
-# https://datadoghq.atlassian.net/wiki/spaces/~6390f13100cb2fc3f98bef00/pages/3923968960/Platform+Automation+Cmd+Cheatsheet#Bazel-target-autocompletion
-# loads all directories with completion scripts from $FPATH
-fpath+=("$(brew --prefix)/share/zsh/site-functions")
-autoload -Uz compinit
-compinit
-
 # bzl reuses completion suggestions for bazel binary
 compdef _bazel bzl
 # BEGIN DATA-ENG-TOOLS MANAGED BLOCK
@@ -277,8 +277,7 @@ alias j11="export JAVA_HOME=\`/usr/libexec/java_home -v 11\`; java -version"
 alias j17="export JAVA_HOME=\`/usr/libexec/java_home -v 17\`; java -version"
 alias j21="export JAVA_HOME=\`/usr/libexec/java_home -v 21\`; java -version"
 
-# Set java 11 as default
-export JAVA_HOME=`/usr/libexec/java_home -v 11`
+# JAVA_HOME is set lazily via the java/sdk wrappers for faster startup
 
 # For Spark 3.4.2:
 export SCALA_HOME="/opt/homebrew/opt/scala@2.12/"
@@ -293,16 +292,25 @@ export PATH=$PATH:${DATADOG_ROOT}/data-eng-tools/bin
 # END DD-ANALYTICS MANAGED BLOCK
 
 # From Go setup
-export PKG_CONFIG_PATH="$(brew --prefix)/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
-export CPATH="$(brew --prefix)/include:$CPATH"
-export LIBRARY_PATH="$(brew --prefix)/lib:$LIBRARY_PATH"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH"
+export CPATH="/opt/homebrew/include:$CPATH"
+export LIBRARY_PATH="/opt/homebrew/lib:$LIBRARY_PATH"
 
 # More memory for Node.
 # From https://datadoghq.atlassian.net/wiki/spaces/FRON/pages/4129194429/TypeScript+IDE+tsserver+troubleshooting+step+by+step
 export NODE_OPTIONS="--max-old-space-size=20000"
 
-eval "$(dd-gitsign load-key)"
+# Lazy-load dd-gitsign + GITLAB_TOKEN: deferred until first git invocation
+_dd_gitsign_loaded=0
+_dd_load_gitsign() {
+  if (( ! _dd_gitsign_loaded )); then
+    _dd_gitsign_loaded=1
+    export GITLAB_TOKEN=$(security find-generic-password -a ${USER} -s gitlab_token -w)
+    eval "$(dd-gitsign load-key)"
+  fi
+}
+git() { _dd_load_gitsign; command git "$@" }
 
 # Add git-focus from https://datadoghq.atlassian.net/wiki/x/IgPhEQE
 export PATH=$PATH:$HOME/dd/experimental/teams/language-tools/bin
@@ -350,9 +358,18 @@ alias dd-api-key="dd-auth -o | grep DD_API_KEY | cut -d= -f2 | pbcopy && echo 'D
 alias dd-app-key="dd-auth -o | grep DD_APP_KEY | cut -d= -f2 | pbcopy && echo 'DD_APP_KEY copied to clipboard'"
 {{ end }}-
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+# SDKMAN - lazy-loaded for faster shell startup
 export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+_sdkman_init() {
+  unfunction sdk java javac 2>/dev/null
+{{ if .is_dd_laptop -}}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 11)
+{{ end -}}
+  [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
+}
+sdk() { _sdkman_init; sdk "$@" }
+java() { _sdkman_init; java "$@" }
+javac() { _sdkman_init; javac "$@" }
 
 # Uncomment line to profile zsh startup.
 # zprof
