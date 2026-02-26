@@ -613,7 +613,7 @@ apply_dotfiles() {
     fi
 
     info "Applying dotfiles with chezmoi..."
-    chezmoi init --apply mtulla || return 1
+    chezmoi init --apply --branch testing mtulla || return 1
 }
 
 set_default_shell() {

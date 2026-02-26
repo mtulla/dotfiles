@@ -1,0 +1,4 @@
+{{- $isDD := promptBoolOnce . "is_dd_laptop" "Is this a Datadog laptop" false -}}
+
+[data]
+    is_dd_laptop = {{ $isDD }}
