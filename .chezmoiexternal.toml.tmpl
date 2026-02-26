@@ -40,7 +40,7 @@
 [".local/bin/eza"]
     type = "archive-file"
     url = "https://github.com/eza-community/eza/releases/download/{{ $ezaVersion }}/eza_{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}aarch64{{ end }}-unknown-linux-gnu.tar.gz"
-    path = "eza"
+    path = "./eza"
     executable = true
 
 {{ $lazygitVersion := (gitHubLatestRelease "jesseduffield/lazygit").TagName -}}
