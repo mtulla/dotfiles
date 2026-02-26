@@ -32,6 +32,6 @@ fi
 
 run_cmd=()
 if [ "$interactive" = true ]; then
-    run_cmd=(sh -c "curl -fsLS get.chezmoi.io | sh -s -- init --apply --branch testing mtulla && exec zsh")
+    run_cmd=(sh -c "curl -fsLS get.chezmoi.io | sh -s -- init --apply --promptBool 'is_dd_laptop=false' --branch testing mtulla && exec zsh")
 fi
 docker run --rm "${tty_flag[@]}" "$IMAGE_NAME" "${run_cmd[@]}"
