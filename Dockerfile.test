@@ -8,7 +8,10 @@ ENV TZ=Etc/UTC
 RUN apt-get update && \
     apt-get install -y sudo curl git tzdata && \
     useradd -m -s /bin/bash testuser && \
+    echo "testuser:testpass" | chpasswd && \
     echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+ENV CHEZMOI_TEST_PASSWORD=testpass
 
 USER testuser
 WORKDIR /home/testuser

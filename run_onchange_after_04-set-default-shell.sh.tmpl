@@ -25,6 +25,12 @@ else
     if ! grep -qF "$zsh_path" /etc/shells; then
         echo "$zsh_path" | sudo tee -a /etc/shells
     fi
-    chsh -s "$zsh_path" || { error "chsh failed"; exit 1; }
+    # chsh requires the user's password via PAM. In automated environments
+    # (e.g., Docker tests), set CHEZMOI_TEST_PASSWORD to pipe it non-interactively.
+    if [[ -n "${CHEZMOI_TEST_PASSWORD:-}" ]]; then
+        echo "$CHEZMOI_TEST_PASSWORD" | chsh -s "$zsh_path" || { error "chsh failed"; exit 1; }
+    else
+        chsh -s "$zsh_path" || { error "chsh failed"; exit 1; }
+    fi
     success "Default shell set to zsh"
 fi
