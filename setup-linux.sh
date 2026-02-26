@@ -218,7 +218,7 @@ install_ohmyzsh() {
         success "Oh My Zsh already installed"
     else
         info "Installing Oh My Zsh (unattended)..."
-        RUNZSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || return 1
+        RUNZSH=no KEEP_ZSHRC=yes CHSH=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || return 1
     fi
 }
 
