@@ -127,6 +127,8 @@ install_ruff() {
 
     if command_exists pipx; then
         info "Installing ruff via pipx..."
+        export PIPX_HOME="${PIPX_HOME:-$HOME/.local/pipx}"
+        export PIPX_BIN_DIR="${PIPX_BIN_DIR:-$HOME/.local/bin}"
         pipx install ruff || return 1
     else
         warn "pipx not available, skipping ruff"
