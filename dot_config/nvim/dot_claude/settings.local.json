@@ -13,7 +13,8 @@
       "WebFetch(domain:drake.mit.edu)",
       "WebFetch(domain:earthly.dev)",
       "WebFetch(domain:bazel.build)",
-      "Bash(nvim:*)"
+      "Bash(nvim:*)",
+      "WebFetch(domain:michenriksen.com)"
     ]
   }
 }

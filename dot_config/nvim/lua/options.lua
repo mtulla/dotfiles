@@ -92,6 +92,36 @@ vim.filetype.add {
   },
 }
 
+-- Go template syntax highlighting for *.tmpl files
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  group = vim.api.nvim_create_augroup("gotmpl_highlight", { clear = true }),
+  pattern = "*.tmpl",
+  callback = function()
+    local filename = vim.fn.expand "%:t"
+    local ext = filename:match ".*%.(.-)%.tmpl$"
+
+    local ext_filetypes = {
+      go = "go",
+      html = "html",
+      md = "markdown",
+      sh = "sh",
+      yaml = "yaml",
+      yml = "yaml",
+      zsh = "zsh",
+    }
+
+    if ext and ext_filetypes[ext] then
+      vim.bo.filetype = ext_filetypes[ext]
+
+      vim.cmd [[
+        syntax include @gotmpl syntax/gotmpl.vim
+        syntax region gotmpl start="{{" end="}}" contains=@gotmpl containedin=ALL
+        syntax region gotmpl start="{%" end="%}" contains=@gotmpl containedin=ALL
+      ]]
+    end
+  end,
+})
+
 -- don't wrap lines
 vim.opt.wrap = false
 
