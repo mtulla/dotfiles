@@ -144,6 +144,7 @@ map("n", "<leader>la", vim.lsp.buf.code_action, { desc = "Code action" })
 map("n", "<leader>r", vim.lsp.buf.rename, { desc = "Rename" })
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Line diagnostic float" })
 map("n", "gr", vim.lsp.buf.references, { desc = "Go to references" })
+map("n", "gy", vim.lsp.buf.type_definition, { desc = "Go to type definition" })
 map("n", "<leader>fD", function()
   snacks.picker.diagnostics { filter = { buf = 0 } }
 end, { desc = "Buffer diagnostics" })
