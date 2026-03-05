@@ -40,7 +40,6 @@
       "Bash(gh pr checks:*)"
     ]
   },
-  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
@@ -60,5 +59,6 @@
     "permissions@mat-brown-contrib": true,
     "pr-description@mat-brown-contrib": true
   },
-  "autoUpdatesChannel": "stable"
+  "autoUpdatesChannel": "stable",
+  "model": "sonnet[1m]"
 }
