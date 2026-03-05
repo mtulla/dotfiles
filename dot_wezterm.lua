@@ -1,5 +1,6 @@
 -- Pull in the wezterm API
 local wezterm = require("wezterm")
+local act = wezterm.action
 
 -- This will hold the configuration.
 local config = wezterm.config_builder()
@@ -16,20 +17,28 @@ config.native_macos_fullscreen_mode = true
 -- tokyonight_night coolnight colorscheme:
 config.color_scheme = "tokyonight_night"
 
+-- Set Keybindings
+config.keys = {}
 -- i hate that opt+return minimizes the window. also messes up claude code
-config.keys = {
-	{ key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment },
-}
+table.insert(config.keys, { key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment })
 
--- add the ability to move wezterm tabs with CRTL+ALT + number
-for i = 1, 8 do
-	-- CTRL+ALT + number to move to that position
-	table.insert(config.keys, {
-		key = tostring(i),
-		mods = "CTRL|ALT",
-		action = wezterm.action.MoveTab(i - 1),
-	})
-end
+-- Move tabs left or right with Shift+Alt+{ and Shift+Alt+}
+table.insert(config.keys, { key = "{", mods = "SHIFT|ALT", action = act.MoveTabRelative(-1) })
+table.insert(config.keys, { key = "}", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) })
+
+-- rename tab with Ctrl+Shift+E
+table.insert(config.keys, {
+	key = "E",
+	mods = "CTRL|SHIFT",
+	action = act.PromptInputLine({
+		description = "Enter new name for tab",
+		action = wezterm.action_callback(function(window, pane, line)
+			if line then
+				window:active_tab():set_title(line)
+			end
+		end),
+	}),
+})
 
 -- and finally, return the configuration to wezterm
 return config
