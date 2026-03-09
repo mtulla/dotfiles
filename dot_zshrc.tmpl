@@ -316,6 +316,11 @@ export SCFW_DD_LOG_LEVEL="ALLOW"
 export SCFW_HOME="/Users/miguel.tullalizardi/.scfw"
 # END SCFW MANAGED BLOCK
 
+# Volta (project-level node version management) — before yarn switch so
+# yarn switch ends up first in PATH and takes precedence over volta for yarn.
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
 # Added by Yarn Switch
 source "/Users/miguel.tullalizardi/.yarn/switch/env"
 
