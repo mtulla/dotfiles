@@ -153,16 +153,13 @@ alias lg='lazygit'
 export XDG_CONFIG_HOME="$HOME/.config"
 
 export NVM_DIR="$HOME/.nvm"
-# Lazy-load nvm to avoid ~1s startup delay
+# Lazy-load nvm to avoid ~1s startup delay (node/npm/npx handled by volta via PATH)
 nvm() {
-  unset -f nvm node npm npx
+  unset -f nvm
   [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
   [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
   nvm "$@"
 }
-node() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; node "$@"; }
-npm() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npm "$@"; }
-npx() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npx "$@"; }
 
 if (( $+commands[fzf] )); then
     # Set up fzf key bindings and fuzzy completion
