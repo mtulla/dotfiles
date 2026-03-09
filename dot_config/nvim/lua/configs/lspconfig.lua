@@ -93,18 +93,23 @@ lspconfig.terraformls.setup {
 -- TS / JS
 
 -- JavaScript/TypeScript specific configuration
+-- ts_ls only starts when tsgo (faster Go-based server) is NOT available in the project
 lspconfig.ts_ls.setup {
   on_attach = function(client, bufnr)
-    -- Call the common on_attach function
     on_attach(client, bufnr)
-
-    -- Disable formatting if you're using prettier or other formatters
     client.server_capabilities.documentFormattingProvider = false
     client.server_capabilities.documentRangeFormattingProvider = false
   end,
   capabilities = capabilities,
-  -- cmd = { "node", ".yarn/sdks/typescript/bin/tsserver" },
-  -- root_dir = lspconfig.util.root_pattern("tsconfig.json", "package.json", ".git"),
+  single_file_support = false,
+  root_dir = function(fname)
+    -- Yield to tsgo when it's bundled anywhere up the tree (monorepo root)
+    local tsgo_root = vim.fs.root(fname, function(_, path)
+      return vim.fn.filereadable(path .. "/.yarn/sdks/typescript-go/lib/tsgo") == 1
+    end)
+    if tsgo_root then return nil end
+    return require("lspconfig.util").root_pattern("tsconfig.json", "jsconfig.json", "package.json", ".git")(fname)
+  end,
   filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
   settings = {
     typescript = {
@@ -132,33 +137,80 @@ lspconfig.ts_ls.setup {
   },
 }
 
+-- tsgo (fast Go-based TS server) — starts when binary exists in project
+local ts_filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" }
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = ts_filetypes,
+  callback = function(args)
+    -- Find monorepo root by looking for the tsgo binary itself
+    local root = vim.fs.root(args.buf, function(_, path)
+      return vim.fn.filereadable(path .. "/.yarn/sdks/typescript-go/lib/tsgo") == 1
+    end)
+    if not root then return end
+
+    local tsgo_binary = root .. "/.yarn/sdks/typescript-go/lib/tsgo"
+
+    vim.lsp.start({
+      name = "tsgo",
+      cmd = { tsgo_binary, "--lsp", "--stdio" },
+      root_dir = root,
+      capabilities = (function()
+        local caps = vim.deepcopy(capabilities)
+        caps.workspace = vim.tbl_extend("force", caps.workspace or {}, {
+          didChangeWatchedFiles = { dynamicRegistration = false },
+        })
+        return caps
+      end)(),
+      on_attach = function(client, bufnr)
+        on_attach(client, bufnr)
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
+        -- Prevent dual TS servers: stop ts_ls if it attached
+        for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "ts_ls" })) do
+          c.stop()
+        end
+      end,
+      settings = {
+        typescript = {
+          preferences = {
+            importModuleSpecifier = "non-relative",
+            autoImportSpecifierExcludeRegexes = { "packages/", "^packages" },
+          },
+          tsserver = {
+            useSyntaxServer = "auto",
+            maxTsServerMemory = 1024 * 24,
+            nodePath = "node",
+            watchOptions = {
+              excludeDirectories = { "**/node_modules", "**/.yarn", "**/.sarif" },
+              excludeFiles = { ".pnp.cjs" },
+            },
+          },
+        },
+      },
+    })
+  end,
+})
+
 -- ESLint configuration
 lspconfig.eslint.setup {
   on_attach = on_attach,
   capabilities = capabilities,
   filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
   settings = {
-    codeAction = {
-      disableRuleComment = {
-        enable = true,
-        location = "separateLine",
-      },
-      showDocumentation = {
-        enable = true,
-      },
+    nodePath = ".yarn/sdks",
+    packageManager = "yarn",
+    rulesCustomizations = {
+      -- Suppress noise from autofixable rules
+      { rule = "prettier/prettier", severity = "off" },
+      { rule = "arca/import-ordering", severity = "off" },
+      { rule = "arca/newline-after-import-section", severity = "off" },
+      { rule = "@typescript-eslint/consistent-type-imports", severity = "off" },
+      { rule = "quotes", severity = "off" },
+      { rule = "import/no-duplicates", severity = "off" },
+      { rule = "unused-imports/no-unused-imports", severity = "off" },
     },
-    codeActionOnSave = {
-      enable = true,
-      mode = "all",
-    },
-    format = true,
-    nodePath = "",
-    onIgnoredFiles = "off",
-    packageManager = "npm",
-    quiet = false,
-    rulesCustomizations = {},
     run = "onType",
-    useESLintClass = false,
     validate = "on",
     workingDirectory = {
       mode = "location",
