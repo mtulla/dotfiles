@@ -187,6 +187,8 @@ fi
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Completions for git dd
+autoload -Uz _git_dd
 {{ if .is_dd_laptop }}
 # BEGIN ANSIBLE MANAGED BLOCK
 # Load homebrew shell variables
