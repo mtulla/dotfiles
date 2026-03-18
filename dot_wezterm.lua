@@ -2,6 +2,9 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
 
+-- resurrect plugin
+local resurrect = wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
+
 -- This will hold the configuration.
 local config = wezterm.config_builder()
 
@@ -39,6 +42,15 @@ table.insert(config.keys, {
 		end),
 	}),
 })
+
+-- resurrecting
+resurrect.state_manager.periodic_save({
+	interval_seconds = 15 * 60,
+	save_workspaces = true,
+	save_windows = true,
+	save_tabs = true,
+})
+wezterm.on("gui-startup", resurrect.state_manager.resurrect_on_gui_startup)
 
 -- and finally, return the configuration to wezterm
 return config
