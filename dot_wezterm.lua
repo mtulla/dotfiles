@@ -52,5 +52,19 @@ resurrect.state_manager.periodic_save({
 })
 wezterm.on("gui-startup", resurrect.state_manager.resurrect_on_gui_startup)
 
+-- Use tmux session name as tab title
+wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
+	-- prefer a manually-set tab title
+	if tab.tab_title and #tab.tab_title > 0 then
+		return tab.tab_title
+	end
+	-- otherwise use the pane title (set by tmux via set-titles)
+	local pane_title = tab.active_pane.title
+	if pane_title and #pane_title > 0 then
+		return pane_title
+	end
+	return tab.active_pane.title
+end)
+
 -- and finally, return the configuration to wezterm
 return config
