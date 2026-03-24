@@ -25,6 +25,9 @@ config.keys = {}
 -- i hate that opt+return minimizes the window. also messes up claude code
 table.insert(config.keys, { key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment })
 
+-- Shift+Enter sends ESC followed by CR so Claude Code can detect it inside tmux
+table.insert(config.keys, { key = "Enter", mods = "SHIFT", action = act.SendString("\x1b\r") })
+
 -- Move tabs left or right with Shift+Alt+{ and Shift+Alt+}
 table.insert(config.keys, { key = "{", mods = "SHIFT|ALT", action = act.MoveTabRelative(-1) })
 table.insert(config.keys, { key = "}", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) })
