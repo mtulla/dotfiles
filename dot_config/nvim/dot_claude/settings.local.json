@@ -1,20 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls:*)",
-      "WebSearch",
-      "Bash(find:*)",
-      "Bash(grep:*)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:ricoberger.de)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "mcp__github__get_file_contents",
-      "mcp__github__search_code",
-      "WebFetch(domain:drake.mit.edu)",
-      "WebFetch(domain:earthly.dev)",
-      "WebFetch(domain:bazel.build)",
-      "Bash(nvim:*)",
-      "WebFetch(domain:michenriksen.com)"
+      "WebFetch(domain:www.lazyvim.org)"
     ]
   }
 }
