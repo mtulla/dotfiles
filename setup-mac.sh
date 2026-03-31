@@ -289,7 +289,7 @@ for tool in gofumpt goimports; do
     fi
 done
 
-# Rust tools (stylua)
+# Rust tools (stylua, tree-sitter-cli)
 if command_exists stylua; then
     success "stylua already installed"
 else
@@ -299,6 +299,18 @@ else
     else
         info "Installing stylua via brew..."
         brew install stylua || error "Failed to install stylua"
+    fi
+fi
+
+if command_exists tree-sitter; then
+    success "tree-sitter-cli already installed"
+else
+    if command_exists cargo; then
+        info "Installing tree-sitter-cli via cargo..."
+        cargo install tree-sitter-cli || error "Failed to install tree-sitter-cli"
+    else
+        info "Installing tree-sitter-cli via brew..."
+        brew install tree-sitter || error "Failed to install tree-sitter-cli"
     fi
 fi
 

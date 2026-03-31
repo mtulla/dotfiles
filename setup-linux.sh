@@ -376,7 +376,7 @@ else
     warn "Go not available, skipping Go tools"
 fi
 
-# Rust tools (stylua)
+# Rust tools (stylua, tree-sitter-cli)
 # Ensure cargo is in PATH
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
@@ -388,6 +388,17 @@ else
         cargo install stylua || error "Failed to install stylua"
     else
         warn "cargo not available, skipping stylua"
+    fi
+fi
+
+if command_exists tree-sitter; then
+    success "tree-sitter-cli already installed"
+else
+    if command_exists cargo; then
+        info "Installing tree-sitter-cli via cargo..."
+        cargo install tree-sitter-cli || error "Failed to install tree-sitter-cli"
+    else
+        warn "cargo not available, skipping tree-sitter-cli"
     fi
 fi
 
