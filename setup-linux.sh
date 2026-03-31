@@ -394,12 +394,8 @@ fi
 if command_exists tree-sitter; then
     success "tree-sitter-cli already installed"
 else
-    if command_exists cargo; then
-        info "Installing tree-sitter-cli via cargo..."
-        cargo install tree-sitter-cli || error "Failed to install tree-sitter-cli"
-    else
-        warn "cargo not available, skipping tree-sitter-cli"
-    fi
+    info "Installing tree-sitter-cli via apt..."
+    sudo apt install -y tree-sitter-cli || error "Failed to install tree-sitter-cli"
 fi
 
 # Python tools (ruff)
