@@ -389,7 +389,7 @@ fi
 # -----------------------------------------------------------------------------
 # 16. Set zsh as default shell
 # -----------------------------------------------------------------------------
-CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+CURRENT_SHELL="$(getent passwd "$(whoami)" | cut -d: -f7)"
 ZSH_PATH="$(which zsh)"
 if [[ "$CURRENT_SHELL" == *zsh* ]]; then
     success "Default shell is already zsh"
