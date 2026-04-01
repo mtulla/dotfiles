@@ -158,8 +158,9 @@ done
 # -----------------------------------------------------------------------------
 # 10. Node.js via nvm + npm global packages
 # -----------------------------------------------------------------------------
-# Source nvm for this session
+# Source nvm for this session (nvm.sh uses unbound variables)
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+set +u
 # shellcheck disable=SC1091
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
@@ -174,6 +175,7 @@ else
         warn "nvm not available, skipping Node.js install"
     fi
 fi
+set -u
 
 if command_exists npm; then
     NPM_GLOBALS=(prettier fixjson)
@@ -268,7 +270,8 @@ else
     curl -s "https://get.sdkman.io" | bash || error "Failed to install SDKMAN"
 fi
 
-# Source SDKMAN for this session
+# Source SDKMAN for this session (sdkman-init.sh uses unbound variables)
+set +u
 # shellcheck disable=SC1091
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
@@ -282,6 +285,7 @@ else
         warn "SDKMAN not available, skipping Java install"
     fi
 fi
+set -u
 
 # -----------------------------------------------------------------------------
 # 13. Bazel
