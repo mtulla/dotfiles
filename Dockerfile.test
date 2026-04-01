@@ -20,6 +20,6 @@ WORKDIR /home/testuser
 COPY --chown=testuser:testuser . /home/testuser/.local/share/chezmoi
 
 # Entrypoint script: install chezmoi, run setup, apply dotfiles
-RUN printf '#!/bin/bash\nset -x\nsh -c "$(curl -fsLS get.chezmoi.io)"\nbash ~/.local/share/chezmoi/setup-linux.sh || true\nexport PATH="$HOME/bin:$HOME/.local/bin:$PATH"\nchezmoi init --apply --promptBool "is_dd_laptop=false" --source ~/.local/share/chezmoi\n' > ~/run-test.sh && chmod +x ~/run-test.sh
+RUN printf '#!/bin/bash\nset -x\nsh -c "$(curl -fsLS get.chezmoi.io)"\nbash ~/.local/share/chezmoi/setup-linux.sh || true\nexport PATH="$HOME/bin:$HOME/.local/bin:$PATH"\nchezmoi init --apply --promptBool "is_dd_laptop=false" --source ~/.local/share/chezmoi --verbose\necho "=== chezmoi apply exit code: $? ==="\n' > ~/run-test.sh && chmod +x ~/run-test.sh
 
 CMD ["bash", "/home/testuser/run-test.sh"]
