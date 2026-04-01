@@ -121,6 +121,7 @@ BUILD_DEPS=(
     libxmlsec1-dev
     libffi-dev
     liblzma-dev
+    libclang-dev
 )
 
 info "Installing build dependencies..."
