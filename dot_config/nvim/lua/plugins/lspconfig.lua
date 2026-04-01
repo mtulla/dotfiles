@@ -42,8 +42,11 @@ return {
           on_attach = function(client, bufnr)
             client.server_capabilities.documentFormattingProvider = false
             client.server_capabilities.documentRangeFormattingProvider = false
-            -- Prevent dual TS servers: stop ts_ls if it attached
+            -- Prevent dual TS servers: stop ts_ls or vtsls if attached
             for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "ts_ls" })) do
+              c.stop()
+            end
+            for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "vtsls" })) do
               c.stop()
             end
           end,
@@ -72,6 +75,9 @@ return {
 
   opts = {
     servers = {
+      -- Disable vtsls — we use tsgo for TypeScript instead
+      vtsls = { enabled = false },
+
       -- Simple servers with default config
       html = {},
       cssls = {},
