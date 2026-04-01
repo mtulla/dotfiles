@@ -67,7 +67,16 @@ info "Updating apt..."
 sudo apt update
 
 # -----------------------------------------------------------------------------
-# 4. Core apt packages
+# 4. Neovim PPA (apt ships 0.6.1 on 22.04, need >= 0.8 for lazy.nvim)
+# -----------------------------------------------------------------------------
+if ! grep -rq "neovim-ppa" /etc/apt/sources.list.d/ 2>/dev/null; then
+    info "Adding neovim unstable PPA..."
+    sudo add-apt-repository -y ppa:neovim-ppa/unstable
+    sudo apt-get update -qq
+fi
+
+# -----------------------------------------------------------------------------
+# 5. Core apt packages
 # -----------------------------------------------------------------------------
 APT_PACKAGES=(
     zsh
@@ -78,8 +87,11 @@ APT_PACKAGES=(
     fzf
     ripgrep
     unzip
+    zip
+    fontconfig
     golang-go
     zsh-syntax-highlighting
+    pipx
 )
 
 info "Installing core apt packages..."
@@ -93,7 +105,7 @@ for pkg in "${APT_PACKAGES[@]}"; do
 done
 
 # -----------------------------------------------------------------------------
-# 5. Build dependencies (needed for pyenv, treesitter, etc.)
+# 6. Build dependencies (needed for pyenv, treesitter, etc.)
 # -----------------------------------------------------------------------------
 BUILD_DEPS=(
     build-essential
@@ -109,6 +121,7 @@ BUILD_DEPS=(
     libxmlsec1-dev
     libffi-dev
     liblzma-dev
+    libclang-dev
 )
 
 info "Installing build dependencies..."
@@ -120,16 +133,6 @@ for pkg in "${BUILD_DEPS[@]}"; do
         sudo apt install -y "$pkg" || error "Failed to install $pkg"
     fi
 done
-
-# -----------------------------------------------------------------------------
-# 6. chezmoi
-# -----------------------------------------------------------------------------
-if command_exists chezmoi; then
-    success "chezmoi already installed"
-else
-    info "Installing chezmoi..."
-    sh -c "$(curl -fsLS get.chezmoi.io)" || error "Failed to install chezmoi"
-fi
 
 # -----------------------------------------------------------------------------
 # 7. WezTerm
@@ -175,37 +178,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 9. Oh My Zsh + plugins + Powerlevel10k
-# -----------------------------------------------------------------------------
-export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
-export ZSH_CUSTOM="${ZSH_CUSTOM:-$ZSH/custom}"
-
-if [[ -d "$ZSH" ]]; then
-    success "Oh My Zsh already installed"
-else
-    info "Installing Oh My Zsh (unattended)..."
-    RUNZSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || error "Failed to install Oh My Zsh"
-fi
-
-if [[ -d "${ZSH_CUSTOM}/plugins/zsh-autosuggestions" ]]; then
-    success "zsh-autosuggestions already installed"
-else
-    info "Installing zsh-autosuggestions..."
-    git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM}/plugins/zsh-autosuggestions" || error "Failed to install zsh-autosuggestions"
-fi
-
-# zsh-syntax-highlighting is installed via apt above; it's sourced by oh-my-zsh plugin
-
-P10K_DIR="${ZSH_CUSTOM}/themes/powerlevel10k"
-if [[ -d "$P10K_DIR" ]]; then
-    success "Powerlevel10k already installed"
-else
-    info "Installing Powerlevel10k..."
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR" || error "Failed to install Powerlevel10k"
-fi
-
-# -----------------------------------------------------------------------------
-# 10. pyenv + nvm
+# 9. pyenv + nvm
 # -----------------------------------------------------------------------------
 export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
 if command_exists pyenv || [[ -d "$PYENV_ROOT" ]]; then
@@ -227,7 +200,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 11. CLI tools (eza, lazygit, zoxide)
+# 10. CLI tools (bat, zoxide — eza, lazygit, fonts handled by chezmoi external)
 # -----------------------------------------------------------------------------
 
 # bat
@@ -236,43 +209,6 @@ if command_exists bat || command_exists batcat; then
 else
     info "Installing bat..."
     sudo apt install -y bat || error "Failed to install bat"
-fi
-
-# eza — download binary from GitHub releases
-if command_exists eza; then
-    success "eza already installed"
-else
-    info "Installing eza..."
-    TMPDIR="$(mktemp -d)"
-    EZA_TAG="$(github_latest_tag eza-community/eza)"
-    EZA_URL="https://github.com/eza-community/eza/releases/download/${EZA_TAG}/eza_${ARCH_ALT}-unknown-linux-gnu.tar.gz"
-    if curl -fsSL -o "${TMPDIR}/eza.tar.gz" "$EZA_URL"; then
-        tar -xzf "${TMPDIR}/eza.tar.gz" -C "$TMPDIR"
-        sudo install -m 755 "${TMPDIR}/eza" /usr/local/bin/eza
-        success "eza installed"
-    else
-        error "Failed to download eza. Install manually from https://github.com/eza-community/eza/releases"
-    fi
-    rm -rf "$TMPDIR"
-fi
-
-# lazygit — download binary from GitHub releases
-if command_exists lazygit; then
-    success "lazygit already installed"
-else
-    info "Installing lazygit..."
-    TMPDIR="$(mktemp -d)"
-    LG_TAG="$(github_latest_tag jesseduffield/lazygit)"
-    LG_VER="${LG_TAG#v}"
-    LG_URL="https://github.com/jesseduffield/lazygit/releases/download/${LG_TAG}/lazygit_${LG_VER}_Linux_${ARCH_ALT}.tar.gz"
-    if curl -fsSL -o "${TMPDIR}/lazygit.tar.gz" "$LG_URL"; then
-        tar -xzf "${TMPDIR}/lazygit.tar.gz" -C "$TMPDIR"
-        sudo install "${TMPDIR}/lazygit" -D -t /usr/local/bin/
-        success "lazygit installed"
-    else
-        error "Failed to download lazygit. Install manually from https://github.com/jesseduffield/lazygit/releases"
-    fi
-    rm -rf "$TMPDIR"
 fi
 
 # zoxide — available in default repos
@@ -284,43 +220,11 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 12. MesloLGS Nerd Font Mono
+# 11. Node.js via nvm + npm global packages
 # -----------------------------------------------------------------------------
-FONT_DIR="$HOME/.local/share/fonts"
-if ls "$FONT_DIR"/MesloLGS* &>/dev/null 2>&1; then
-    success "MesloLGS Nerd Font already installed"
-else
-    info "Installing MesloLGS Nerd Font..."
-    mkdir -p "$FONT_DIR"
-    TMPDIR="$(mktemp -d)"
-    NF_TAG="$(github_latest_tag ryanoasis/nerd-fonts)"
-    NF_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/${NF_TAG}/Meslo.zip"
-    if curl -fsSL -o "${TMPDIR}/Meslo.zip" "$NF_URL"; then
-        unzip -o "${TMPDIR}/Meslo.zip" -d "$FONT_DIR"
-        fc-cache -f "$FONT_DIR"
-        success "MesloLGS Nerd Font installed"
-    else
-        error "Failed to download Nerd Font. Install manually from https://github.com/ryanoasis/nerd-fonts/releases"
-    fi
-    rm -rf "$TMPDIR"
-fi
-
-# -----------------------------------------------------------------------------
-# 13. TPM (Tmux Plugin Manager)
-# -----------------------------------------------------------------------------
-TPM_DIR="$HOME/.tmux/plugins/tpm"
-if [[ -d "$TPM_DIR" ]]; then
-    success "TPM already installed"
-else
-    info "Installing TPM..."
-    git clone https://github.com/tmux-plugins/tpm "$TPM_DIR" || error "Failed to install TPM"
-fi
-
-# -----------------------------------------------------------------------------
-# 14. Node.js via nvm + npm global packages
-# -----------------------------------------------------------------------------
-# Source nvm for this session
+# Source nvm for this session (nvm.sh uses unbound variables)
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+set +u
 # shellcheck disable=SC1091
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
@@ -335,6 +239,7 @@ else
         warn "nvm not available, skipping Node.js install"
     fi
 fi
+set -u
 
 if command_exists npm; then
     NPM_GLOBALS=(prettier fixjson)
@@ -351,18 +256,31 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 15. Go tools + Rust tools + Python tools
+# 12. Go tools + Rust tools + Python tools
 # -----------------------------------------------------------------------------
 # Ensure GOPATH/bin is in PATH
 export GOPATH="${GOPATH:-$HOME/go}"
 export PATH="$GOPATH/bin:$PATH"
 
-# Go tools
+# Go tools (version-aware: latest requires Go 1.22+)
 if command_exists go; then
-    GO_TOOLS=(
-        "mvdan.cc/gofumpt@latest"
-        "golang.org/x/tools/cmd/goimports@latest"
-    )
+    go_ver="$(go env GOVERSION)"  # e.g., go1.18.1
+    go_minor="${go_ver#go1.}"
+    go_minor="${go_minor%%.*}"
+
+    if (( go_minor >= 22 )); then
+        GO_TOOLS=(
+            "mvdan.cc/gofumpt@latest"
+            "golang.org/x/tools/cmd/goimports@latest"
+        )
+    else
+        warn "Go ${go_ver} is old; installing pinned compatible tool versions"
+        GO_TOOLS=(
+            "mvdan.cc/gofumpt@v0.4.0"
+            "golang.org/x/tools/cmd/goimports@v0.14.0"
+        )
+    fi
+
     for tool in "${GO_TOOLS[@]}"; do
         tool_name="$(basename "${tool%%@*}")"
         if command_exists "$tool_name"; then
@@ -394,27 +312,30 @@ fi
 if command_exists tree-sitter; then
     success "tree-sitter-cli already installed"
 else
-    info "Installing tree-sitter-cli via apt..."
-    sudo apt install -y tree-sitter-cli || error "Failed to install tree-sitter-cli"
+    if command_exists cargo; then
+        info "Installing tree-sitter-cli via cargo..."
+        cargo install tree-sitter-cli || error "Failed to install tree-sitter-cli"
+    else
+        warn "cargo not available, skipping tree-sitter-cli"
+    fi
 fi
 
-# Python tools (ruff)
+# Python tools (ruff via pipx)
 if command_exists ruff; then
     success "ruff already installed"
 else
-    if command_exists pip3; then
-        info "Installing ruff via pip..."
-        pip3 install --user ruff || error "Failed to install ruff"
-    elif command_exists pip; then
-        info "Installing ruff via pip..."
-        pip install --user ruff || error "Failed to install ruff"
+    if command_exists pipx; then
+        info "Installing ruff via pipx..."
+        export PIPX_HOME="${PIPX_HOME:-$HOME/.local/pipx}"
+        export PIPX_BIN_DIR="${PIPX_BIN_DIR:-$HOME/.local/bin}"
+        pipx install ruff || error "Failed to install ruff"
     else
-        warn "pip not available, skipping ruff"
+        warn "pipx not available, skipping ruff"
     fi
 fi
 
 # -----------------------------------------------------------------------------
-# 16. SDKMAN
+# 13. SDKMAN + Java
 # -----------------------------------------------------------------------------
 export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
 if [[ -d "$SDKMAN_DIR" ]]; then
@@ -424,7 +345,8 @@ else
     curl -s "https://get.sdkman.io" | bash || error "Failed to install SDKMAN"
 fi
 
-# Source SDKMAN for this session
+# Source SDKMAN for this session (sdkman-init.sh uses unbound variables)
+set +u
 # shellcheck disable=SC1091
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
@@ -438,28 +360,10 @@ else
         warn "SDKMAN not available, skipping Java install"
     fi
 fi
+set -u
 
 # -----------------------------------------------------------------------------
-# 17. Bazel
-# -----------------------------------------------------------------------------
-if command_exists bazel; then
-    success "Bazel already installed"
-else
-    info "Installing Bazel via bazelisk..."
-    TMPDIR="$(mktemp -d)"
-    BZL_TAG="$(github_latest_tag bazelbuild/bazelisk)"
-    BZL_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BZL_TAG}/bazelisk-linux-${ARCH_GO}"
-    if curl -fsSL -o "${TMPDIR}/bazelisk" "$BZL_URL"; then
-        sudo install -m 755 "${TMPDIR}/bazelisk" /usr/local/bin/bazel
-        success "Bazel (bazelisk) installed"
-    else
-        error "Failed to download bazelisk. Install manually from https://github.com/bazelbuild/bazelisk/releases"
-    fi
-    rm -rf "$TMPDIR"
-fi
-
-# -----------------------------------------------------------------------------
-# 18. google-java-format
+# 14. google-java-format
 # -----------------------------------------------------------------------------
 if command_exists google-java-format; then
     success "google-java-format already installed"
@@ -469,15 +373,16 @@ else
     GJF_TAG="$(github_latest_tag google/google-java-format)"
     GJF_VER="${GJF_TAG#v}"
     GJF_URL="https://github.com/google/google-java-format/releases/download/${GJF_TAG}/google-java-format-${GJF_VER}-all-deps.jar"
-    GJF_DIR="/usr/local/lib/google-java-format"
+    GJF_DIR="$HOME/.local/lib/google-java-format"
     if curl -fsSL -o "${TMPDIR}/google-java-format.jar" "$GJF_URL"; then
-        sudo mkdir -p "$GJF_DIR"
-        sudo install -m 644 "${TMPDIR}/google-java-format.jar" "$GJF_DIR/google-java-format.jar"
-        sudo tee /usr/local/bin/google-java-format > /dev/null <<'WRAPPER'
+        mkdir -p "$GJF_DIR"
+        install -m 644 "${TMPDIR}/google-java-format.jar" "$GJF_DIR/google-java-format.jar"
+        mkdir -p "$HOME/.local/bin"
+        cat > "$HOME/.local/bin/google-java-format" <<'WRAPPER'
 #!/usr/bin/env bash
-exec java -jar /usr/local/lib/google-java-format/google-java-format.jar "$@"
+exec java -jar "$HOME/.local/lib/google-java-format/google-java-format.jar" "$@"
 WRAPPER
-        sudo chmod +x /usr/local/bin/google-java-format
+        chmod +x "$HOME/.local/bin/google-java-format"
         success "google-java-format installed"
     else
         error "Failed to download google-java-format. Install manually from https://github.com/google/google-java-format/releases"
@@ -486,24 +391,37 @@ WRAPPER
 fi
 
 # -----------------------------------------------------------------------------
-# 19. Set zsh as default shell
+# 15. Claude Code CLI
 # -----------------------------------------------------------------------------
-CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+if command_exists claude; then
+    success "Claude Code already installed"
+else
+    info "Installing Claude Code..."
+    curl -fsSL https://claude.ai/install.sh | bash || error "Failed to install Claude Code"
+fi
+
+# -----------------------------------------------------------------------------
+# 16. Set zsh as default shell
+# -----------------------------------------------------------------------------
+CURRENT_SHELL="$(getent passwd "$(whoami)" | cut -d: -f7)"
 ZSH_PATH="$(which zsh)"
 if [[ "$CURRENT_SHELL" == *zsh* ]]; then
     success "Default shell is already zsh"
 else
     info "Setting zsh as default shell..."
-    if grep -qF "$ZSH_PATH" /etc/shells; then
-        chsh -s "$ZSH_PATH"
-    else
+    if ! grep -qF "$ZSH_PATH" /etc/shells; then
         echo "$ZSH_PATH" | sudo tee -a /etc/shells
+    fi
+    # Support non-interactive chsh in Docker tests
+    if [[ -n "${CHEZMOI_TEST_PASSWORD:-}" ]]; then
+        echo "$CHEZMOI_TEST_PASSWORD" | chsh -s "$ZSH_PATH"
+    else
         chsh -s "$ZSH_PATH"
     fi
 fi
 
 # -----------------------------------------------------------------------------
-# 20. Summary
+# 17. Summary
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗"
@@ -511,7 +429,7 @@ echo "║            Setup Complete!                ║"
 echo "╚══════════════════════════════════════════╝${RESET}"
 echo ""
 echo "Next steps:"
-echo "  1. chezmoi init --apply <github-user>    # deploy dotfiles"
+echo "  1. chezmoi init --apply <github-user>    # deploy dotfiles + external deps"
 echo "  2. Open a new terminal                   # zsh + Powerlevel10k loads"
 echo "  3. tmux, then prefix + I                 # install tmux plugins"
 echo "  4. nvim                                  # Lazy.nvim auto-installs plugins"

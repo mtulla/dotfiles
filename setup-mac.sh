@@ -72,6 +72,7 @@ BREW_PACKAGES=(
     ripgrep
     golang
     zsh-syntax-highlighting
+    pipx
 )
 
 info "Installing core brew packages..."
@@ -100,17 +101,7 @@ for pkg in "${BUILD_DEPS[@]}"; do
 done
 
 # -----------------------------------------------------------------------------
-# 6. chezmoi
-# -----------------------------------------------------------------------------
-if command_exists chezmoi; then
-    success "chezmoi already installed"
-else
-    info "Installing chezmoi..."
-    brew install chezmoi
-fi
-
-# -----------------------------------------------------------------------------
-# 7. WezTerm
+# 6. WezTerm
 # -----------------------------------------------------------------------------
 if brew list --cask wezterm &>/dev/null || [[ -d "/Applications/WezTerm.app" ]]; then
     success "WezTerm already installed"
@@ -120,7 +111,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 8. Rust via rustup
+# 7. Rust via rustup
 # -----------------------------------------------------------------------------
 if command_exists rustup; then
     success "Rust (rustup) already installed"
@@ -132,45 +123,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 9. Oh My Zsh + plugins + Powerlevel10k
-# -----------------------------------------------------------------------------
-export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
-export ZSH_CUSTOM="${ZSH_CUSTOM:-$ZSH/custom}"
-
-if [[ -d "$ZSH" ]]; then
-    success "Oh My Zsh already installed"
-else
-    info "Installing Oh My Zsh (unattended)..."
-    RUNZSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || error "Failed to install Oh My Zsh"
-fi
-
-if [[ -d "${ZSH_CUSTOM}/plugins/zsh-autosuggestions" ]]; then
-    success "zsh-autosuggestions already installed"
-else
-    info "Installing zsh-autosuggestions..."
-    git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM}/plugins/zsh-autosuggestions" || error "Failed to install zsh-autosuggestions"
-fi
-
-# zsh-syntax-highlighting is installed via brew above; it's sourced by oh-my-zsh plugin
-
-if brew list powerlevel10k &>/dev/null; then
-    success "Powerlevel10k already installed"
-else
-    info "Installing Powerlevel10k..."
-    brew install powerlevel10k
-fi
-# Symlink into oh-my-zsh themes if not already there
-P10K_THEME_DIR="${ZSH_CUSTOM}/themes/powerlevel10k"
-if [[ ! -d "$P10K_THEME_DIR" ]]; then
-    P10K_BREW_DIR="$(brew --prefix)/share/powerlevel10k"
-    if [[ -d "$P10K_BREW_DIR" ]]; then
-        ln -s "$P10K_BREW_DIR" "$P10K_THEME_DIR"
-        success "Symlinked Powerlevel10k into Oh My Zsh themes"
-    fi
-fi
-
-# -----------------------------------------------------------------------------
-# 10. pyenv + nvm
+# 8. pyenv + nvm
 # -----------------------------------------------------------------------------
 if command_exists pyenv; then
     success "pyenv already installed"
@@ -189,7 +142,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 11. CLI tools (eza, lazygit, zoxide)
+# 9. CLI tools (eza, lazygit, zoxide, bat)
 # -----------------------------------------------------------------------------
 CLI_TOOLS=(bat eza lazygit zoxide)
 
@@ -203,31 +156,11 @@ for tool in "${CLI_TOOLS[@]}"; do
 done
 
 # -----------------------------------------------------------------------------
-# 12. MesloLGS Nerd Font Mono
+# 10. Node.js via nvm + npm global packages
 # -----------------------------------------------------------------------------
-if brew list --cask font-meslo-lg-nerd-font &>/dev/null; then
-    success "MesloLGS Nerd Font already installed"
-else
-    info "Installing MesloLGS Nerd Font..."
-    brew install --cask font-meslo-lg-nerd-font || error "Failed to install Nerd Font"
-fi
-
-# -----------------------------------------------------------------------------
-# 13. TPM (Tmux Plugin Manager)
-# -----------------------------------------------------------------------------
-TPM_DIR="$HOME/.tmux/plugins/tpm"
-if [[ -d "$TPM_DIR" ]]; then
-    success "TPM already installed"
-else
-    info "Installing TPM..."
-    git clone https://github.com/tmux-plugins/tpm "$TPM_DIR" || error "Failed to install TPM"
-fi
-
-# -----------------------------------------------------------------------------
-# 14. Node.js via nvm + npm global packages
-# -----------------------------------------------------------------------------
-# Source nvm for this session
+# Source nvm for this session (nvm.sh uses unbound variables)
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+set +u
 # shellcheck disable=SC1091
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
@@ -242,6 +175,7 @@ else
         warn "nvm not available, skipping Node.js install"
     fi
 fi
+set -u
 
 if command_exists npm; then
     NPM_GLOBALS=(prettier fixjson)
@@ -258,7 +192,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 15. Go tools + Rust tools + Python tools
+# 11. Go tools + Rust tools + Python tools
 # -----------------------------------------------------------------------------
 # Go tools
 if command_exists go; then
@@ -305,20 +239,28 @@ fi
 if command_exists tree-sitter; then
     success "tree-sitter-cli already installed"
 else
-    info "Installing tree-sitter-cli via brew..."
-    brew install tree-sitter || error "Failed to install tree-sitter-cli"
+    if command_exists cargo; then
+        info "Installing tree-sitter-cli via cargo..."
+        cargo install tree-sitter-cli || error "Failed to install tree-sitter-cli"
+    else
+        warn "cargo not available, skipping tree-sitter-cli"
+    fi
 fi
 
-# Python tools (ruff)
+# Python tools (ruff via pipx)
 if command_exists ruff; then
     success "ruff already installed"
 else
-    info "Installing ruff..."
-    brew install ruff || error "Failed to install ruff"
+    if command_exists pipx; then
+        info "Installing ruff via pipx..."
+        pipx install ruff || error "Failed to install ruff"
+    else
+        warn "pipx not available, skipping ruff"
+    fi
 fi
 
 # -----------------------------------------------------------------------------
-# 16. SDKMAN
+# 12. SDKMAN + Java
 # -----------------------------------------------------------------------------
 export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
 if [[ -d "$SDKMAN_DIR" ]]; then
@@ -328,7 +270,8 @@ else
     curl -s "https://get.sdkman.io" | bash || error "Failed to install SDKMAN"
 fi
 
-# Source SDKMAN for this session
+# Source SDKMAN for this session (sdkman-init.sh uses unbound variables)
+set +u
 # shellcheck disable=SC1091
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
@@ -342,9 +285,10 @@ else
         warn "SDKMAN not available, skipping Java install"
     fi
 fi
+set -u
 
 # -----------------------------------------------------------------------------
-# 17. Bazel
+# 13. Bazel
 # -----------------------------------------------------------------------------
 if brew list bazelisk &>/dev/null || command_exists bazel; then
     success "Bazel (bazelisk) already installed"
@@ -354,7 +298,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 18. google-java-format
+# 14. google-java-format
 # -----------------------------------------------------------------------------
 if brew list google-java-format &>/dev/null; then
     success "google-java-format already installed"
@@ -364,7 +308,17 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 19. Set zsh as default shell
+# 15. Claude Code CLI
+# -----------------------------------------------------------------------------
+if command_exists claude; then
+    success "Claude Code already installed"
+else
+    info "Installing Claude Code..."
+    curl -fsSL https://claude.ai/install.sh | bash || error "Failed to install Claude Code"
+fi
+
+# -----------------------------------------------------------------------------
+# 16. Set zsh as default shell
 # -----------------------------------------------------------------------------
 CURRENT_SHELL="$(dscl . -read /Users/"$USER" UserShell | awk '{print $2}')"
 ZSH_PATH="$(which zsh)"
@@ -381,7 +335,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 20. Summary
+# 17. Summary
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗"
@@ -389,7 +343,7 @@ echo "║            Setup Complete!                ║"
 echo "╚══════════════════════════════════════════╝${RESET}"
 echo ""
 echo "Next steps:"
-echo "  1. chezmoi init --apply <github-user>    # deploy dotfiles"
+echo "  1. chezmoi init --apply <github-user>    # deploy dotfiles + external deps"
 echo "  2. Open a new terminal                   # zsh + Powerlevel10k loads"
 echo "  3. tmux, then prefix + I                 # install tmux plugins"
 echo "  4. nvim                                  # Lazy.nvim auto-installs plugins"

@@ -1,0 +1,25 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+# Create a non-root user with passwordless sudo.
+# Install curl, git, and software-properties-common upfront — needed by setup script.
+RUN apt-get update && \
+    apt-get install -y sudo curl git tzdata software-properties-common && \
+    useradd -m -s /bin/bash testuser && \
+    echo "testuser:testpass" | chpasswd && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+ENV CHEZMOI_TEST_PASSWORD=testpass
+
+USER testuser
+WORKDIR /home/testuser
+
+# Copy the local repo so we can test uncommitted changes
+COPY --chown=testuser:testuser . /home/testuser/.local/share/chezmoi
+
+# Entrypoint script: install chezmoi, run setup, apply dotfiles
+RUN printf '#!/bin/bash\nset -x\nsh -c "$(curl -fsLS get.chezmoi.io)"\nbash ~/.local/share/chezmoi/setup-linux.sh || true\nexport PATH="$HOME/bin:$HOME/.local/bin:$PATH"\nchezmoi init --apply --promptBool "is_dd_laptop=false" --source ~/.local/share/chezmoi --verbose\necho "=== chezmoi apply exit code: $? ==="\n' > ~/run-test.sh && chmod +x ~/run-test.sh
+
+CMD ["bash", "/home/testuser/run-test.sh"]
