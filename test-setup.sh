@@ -33,6 +33,6 @@ fi
 
 run_cmd=()
 if [ "$interactive" = true ]; then
-    run_cmd=(sh -c "sh -c \"\$(curl -fsLS get.chezmoi.io)\" && bash ~/.local/share/chezmoi/setup-linux.sh && ~/bin/chezmoi init --apply --promptBool 'is_dd_laptop=false' --source ~/.local/share/chezmoi && exec zsh")
+    run_cmd=(sh -c "sh -c \"\$(curl -fsLS get.chezmoi.io)\" && bash ~/.local/share/chezmoi/setup-linux.sh; ~/bin/chezmoi init --apply --promptBool 'is_dd_laptop=false' --source ~/.local/share/chezmoi && exec zsh")
 fi
 docker run --rm "${tty_flag[@]}" "$IMAGE_NAME" "${run_cmd[@]}"

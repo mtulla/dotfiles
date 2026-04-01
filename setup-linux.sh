@@ -261,12 +261,25 @@ fi
 export GOPATH="${GOPATH:-$HOME/go}"
 export PATH="$GOPATH/bin:$PATH"
 
-# Go tools
+# Go tools (version-aware: latest requires Go 1.22+)
 if command_exists go; then
-    GO_TOOLS=(
-        "mvdan.cc/gofumpt@latest"
-        "golang.org/x/tools/cmd/goimports@latest"
-    )
+    go_ver="$(go env GOVERSION)"  # e.g., go1.18.1
+    go_minor="${go_ver#go1.}"
+    go_minor="${go_minor%%.*}"
+
+    if (( go_minor >= 22 )); then
+        GO_TOOLS=(
+            "mvdan.cc/gofumpt@latest"
+            "golang.org/x/tools/cmd/goimports@latest"
+        )
+    else
+        warn "Go ${go_ver} is old; installing pinned compatible tool versions"
+        GO_TOOLS=(
+            "mvdan.cc/gofumpt@v0.4.0"
+            "golang.org/x/tools/cmd/goimports@v0.14.0"
+        )
+    fi
+
     for tool in "${GO_TOOLS[@]}"; do
         tool_name="$(basename "${tool%%@*}")"
         if command_exists "$tool_name"; then

@@ -20,6 +20,6 @@ WORKDIR /home/testuser
 COPY --chown=testuser:testuser . /home/testuser/.local/share/chezmoi
 
 # 1. Install chezmoi
-# 2. Run setup-linux.sh to install system dependencies
+# 2. Run setup-linux.sh to install system dependencies (some may fail, e.g. WezTerm on arm64)
 # 3. Run chezmoi apply to deploy dotfiles + external dependencies
-CMD ["sh", "-c", "sh -c \"$(curl -fsLS get.chezmoi.io)\" && bash ~/.local/share/chezmoi/setup-linux.sh && ~/bin/chezmoi init --apply --promptBool 'is_dd_laptop=false' --source ~/.local/share/chezmoi"]
+CMD ["sh", "-c", "sh -c \"$(curl -fsLS get.chezmoi.io)\" && bash ~/.local/share/chezmoi/setup-linux.sh; ~/bin/chezmoi init --apply --promptBool 'is_dd_laptop=false' --source ~/.local/share/chezmoi"]
