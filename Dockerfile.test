@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
 # Create a non-root user with passwordless sudo.
-# Install curl and git upfront — chezmoi init needs both.
+# Install curl, git, and software-properties-common upfront — needed by setup script.
 RUN apt-get update && \
     apt-get install -y sudo curl git tzdata software-properties-common && \
     useradd -m -s /bin/bash testuser && \
@@ -16,4 +16,10 @@ ENV CHEZMOI_TEST_PASSWORD=testpass
 USER testuser
 WORKDIR /home/testuser
 
-CMD ["sh", "-c", "curl -fsLS get.chezmoi.io | sh -s -- init --apply --promptBool 'is_dd_laptop=false' --branch testing mtulla"]
+# Copy the local repo so we can test uncommitted changes
+COPY --chown=testuser:testuser . /home/testuser/.local/share/chezmoi
+
+# 1. Install chezmoi
+# 2. Run setup-linux.sh to install system dependencies
+# 3. Run chezmoi apply to deploy dotfiles + external dependencies
+CMD ["sh", "-c", "sh -c \"$(curl -fsLS get.chezmoi.io)\" && bash ~/.local/share/chezmoi/setup-linux.sh && ~/bin/chezmoi init --apply --promptBool 'is_dd_laptop=false' --source ~/.local/share/chezmoi"]

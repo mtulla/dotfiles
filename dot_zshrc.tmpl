@@ -76,7 +76,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # DISABLE_LS_COLORS="true"
 
 # Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
+DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
 # ENABLE_CORRECTION="true"
@@ -159,16 +159,15 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export NVM_DIR="$HOME/.nvm"
 # Lazy-load nvm to avoid ~1s startup delay
 {{ if eq .chezmoi.os "darwin" -}}
+# macOS: only lazy-load nvm itself (node/npm/npx handled by volta via PATH)
 nvm() {
-  unset -f nvm node npm npx
+  unset -f nvm
   [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
   [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
   nvm "$@"
 }
-node() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; node "$@"; }
-npm() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npm "$@"; }
-npx() { unset -f nvm node npm npx; [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"; npx "$@"; }
 {{ else -}}
+# Linux: lazy-load nvm and also node/npm/npx
 nvm() {
   unset -f nvm node npm npx
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -210,6 +209,8 @@ fi
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Completions for git dd
+autoload -Uz _git_dd
 {{ if .is_dd_laptop }}
 # BEGIN ANSIBLE MANAGED BLOCK
 # Load homebrew shell variables
@@ -339,6 +340,11 @@ export SCFW_DD_LOG_LEVEL="ALLOW"
 export SCFW_HOME="/Users/miguel.tullalizardi/.scfw"
 # END SCFW MANAGED BLOCK
 
+# Volta (project-level node version management) — before yarn switch so
+# yarn switch ends up first in PATH and takes precedence over volta for yarn.
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
 # Added by Yarn Switch
 source "/Users/miguel.tullalizardi/.yarn/switch/env"
 
@@ -368,7 +374,7 @@ dd-curl() {
 
 alias dd-api-key="dd-auth -o | grep DD_API_KEY | cut -d= -f2 | pbcopy && echo 'DD_API_KEY copied to clipboard'"
 alias dd-app-key="dd-auth -o | grep DD_APP_KEY | cut -d= -f2 | pbcopy && echo 'DD_APP_KEY copied to clipboard'"
-{{ end }}-
+{{ end }}
 
 # SDKMAN - lazy-loaded for faster shell startup
 export SDKMAN_DIR="$HOME/.sdkman"

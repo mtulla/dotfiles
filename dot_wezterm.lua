@@ -1,5 +1,9 @@
 -- Pull in the wezterm API
 local wezterm = require("wezterm")
+local act = wezterm.action
+
+-- resurrect plugin
+local resurrect = wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
 
 -- This will hold the configuration.
 local config = wezterm.config_builder()
@@ -16,20 +20,54 @@ config.native_macos_fullscreen_mode = true
 -- tokyonight_night coolnight colorscheme:
 config.color_scheme = "tokyonight_night"
 
+-- Set Keybindings
+config.keys = {}
 -- i hate that opt+return minimizes the window. also messes up claude code
-config.keys = {
-	{ key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment },
-}
+table.insert(config.keys, { key = "Enter", mods = "ALT", action = wezterm.action.DisableDefaultAssignment })
 
--- add the ability to move wezterm tabs with CRTL+ALT + number
-for i = 1, 8 do
-	-- CTRL+ALT + number to move to that position
-	table.insert(config.keys, {
-		key = tostring(i),
-		mods = "CTRL|ALT",
-		action = wezterm.action.MoveTab(i - 1),
-	})
-end
+-- Shift+Enter sends ESC followed by CR so Claude Code can detect it inside tmux
+table.insert(config.keys, { key = "Enter", mods = "SHIFT", action = act.SendString("\x1b\r") })
+
+-- Move tabs left or right with Shift+Alt+{ and Shift+Alt+}
+table.insert(config.keys, { key = "{", mods = "SHIFT|ALT", action = act.MoveTabRelative(-1) })
+table.insert(config.keys, { key = "}", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) })
+
+-- rename tab with Ctrl+Shift+E
+table.insert(config.keys, {
+	key = "E",
+	mods = "CTRL|SHIFT",
+	action = act.PromptInputLine({
+		description = "Enter new name for tab",
+		action = wezterm.action_callback(function(window, pane, line)
+			if line then
+				window:active_tab():set_title(line)
+			end
+		end),
+	}),
+})
+
+-- resurrecting
+resurrect.state_manager.periodic_save({
+	interval_seconds = 15 * 60,
+	save_workspaces = true,
+	save_windows = true,
+	save_tabs = true,
+})
+wezterm.on("gui-startup", resurrect.state_manager.resurrect_on_gui_startup)
+
+-- Use tmux session name as tab title
+wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
+	-- prefer a manually-set tab title
+	if tab.tab_title and #tab.tab_title > 0 then
+		return tab.tab_title
+	end
+	-- otherwise use the pane title (set by tmux via set-titles)
+	local pane_title = tab.active_pane.title
+	if pane_title and #pane_title > 0 then
+		return pane_title
+	end
+	return tab.active_pane.title
+end)
 
 -- and finally, return the configuration to wezterm
 return config

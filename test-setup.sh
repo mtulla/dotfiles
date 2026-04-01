@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# Build and run dotfiles setup inside a Docker container via chezmoi.
+# Build and run dotfiles setup inside a Docker container.
+# Tests setup-linux.sh + chezmoi apply using the local repo.
 # Usage: ./test-setup.sh [--no-cache] [-i|--interactive]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,7 +25,7 @@ docker build \
     "$SCRIPT_DIR" || exit 1
 
 echo ""
-echo "==> Running chezmoi init --apply in container..."
+echo "==> Running setup-linux.sh + chezmoi apply in container..."
 tty_flag=()
 if [ -t 0 ]; then
     tty_flag=("-it")
@@ -32,6 +33,6 @@ fi
 
 run_cmd=()
 if [ "$interactive" = true ]; then
-    run_cmd=(sh -c "curl -fsLS get.chezmoi.io | sh -s -- init --apply --promptBool 'is_dd_laptop=false' --branch testing mtulla && exec zsh")
+    run_cmd=(sh -c "sh -c \"\$(curl -fsLS get.chezmoi.io)\" && bash ~/.local/share/chezmoi/setup-linux.sh && ~/bin/chezmoi init --apply --promptBool 'is_dd_laptop=false' --source ~/.local/share/chezmoi && exec zsh")
 fi
 docker run --rm "${tty_flag[@]}" "$IMAGE_NAME" "${run_cmd[@]}"

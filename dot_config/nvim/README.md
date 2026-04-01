@@ -1,2 +1,4 @@
-This NeoVim config is heavily insiperd by
-<https://github.com/Antoine-Prieur/dotfiles/tree/main/.config/nvim>
+# 💤 LazyVim
+
+A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
+Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
