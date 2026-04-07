@@ -14,8 +14,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Ensure ~/bin and ~/.local/bin are in PATH (used by chezmoi, pipx, etc.)
-PATH="$HOME/bin:$HOME/.local/bin:${PATH}"
+# Ensure ~/bin is in PATH.
+PATH="$HOME/bin:${PATH}"
 # Add homebrew to PATH.
 PATH="/opt/homebrew/bin:${PATH}"
 PATH="/usr/local/opt/python/libexec/bin:$PATH"
@@ -328,9 +328,6 @@ git() { _dd_load_gitsign; command git "$@" }
 # Add git-focus from https://datadoghq.atlassian.net/wiki/x/IgPhEQE
 export PATH=$PATH:$HOME/dd/experimental/teams/language-tools/bin
 
-# Created by `pipx` on 2025-09-22 00:42:16
-export PATH="$PATH:/Users/miguel.tullalizardi/.local/bin"
-
 # BEGIN SCFW MANAGED BLOCK
 alias npm="scfw run npm"
 alias pip="scfw run pip"
@@ -344,6 +341,9 @@ export SCFW_HOME="/Users/miguel.tullalizardi/.scfw"
 # yarn switch ends up first in PATH and takes precedence over volta for yarn.
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
+
+# ~/.local/bin last so it takes highest precedence (pipx, chezmoi, etc.)
+export PATH="$HOME/.local/bin:$PATH"
 
 # Added by Yarn Switch
 source "/Users/miguel.tullalizardi/.yarn/switch/env"
