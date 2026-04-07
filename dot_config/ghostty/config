@@ -1,4 +1,8 @@
 font-family = MesloLGS Nerd Font Mono
 font-size = 16
 theme = tokyonight
-shell-integration-features = ssh-terminfo,ssh-env,sudo
+shell-integration = zsh
+shell-integration-features = ssh-terminfo,sudo
+
+# Shift+Enter sends ESC+CR so Claude Code can detect it inside tmux
+keybind = shift+enter=text:\x1b\x0d
