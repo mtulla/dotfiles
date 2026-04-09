@@ -85,6 +85,7 @@ APT_PACKAGES=(
     neovim
     tmux
     fzf
+    fd-find
     ripgrep
     unzip
     zip
