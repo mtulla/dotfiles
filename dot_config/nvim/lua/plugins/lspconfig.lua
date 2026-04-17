@@ -75,9 +75,6 @@ return {
 
   opts = {
     servers = {
-      -- Disable vtsls — we use tsgo for TypeScript instead
-      vtsls = { enabled = false },
-
       -- Simple servers with default config
       html = {},
       cssls = {},
@@ -124,52 +121,6 @@ return {
               autoSearchPaths = true,
               diagnosticMode = "openFilesOnly",
               useLibraryCodeForTypes = true,
-            },
-          },
-        },
-      },
-
-      -- TypeScript / JavaScript
-      ts_ls = {
-        single_file_support = false,
-        root_dir = function(fname)
-          local tsgo_root = vim.fs.root(fname, function(_, path)
-            return vim.fn.filereadable(path .. "/.yarn/sdks/typescript-go/lib/tsgo") == 1
-          end)
-          if tsgo_root then
-            return nil
-          end
-          return require("lspconfig.util").root_pattern("tsconfig.json", "jsconfig.json", "package.json", ".git")(fname)
-        end,
-        filetypes = {
-          "javascript",
-          "javascriptreact",
-          "javascript.jsx",
-          "typescript",
-          "typescriptreact",
-          "typescript.tsx",
-        },
-        settings = {
-          typescript = {
-            inlayHints = {
-              includeInlayParameterNameHints = "all",
-              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
-            },
-          },
-          javascript = {
-            inlayHints = {
-              includeInlayParameterNameHints = "all",
-              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
             },
           },
         },
@@ -283,13 +234,6 @@ return {
           local pythonUtils = require("utils.python")
           local pythonPath = pythonUtils.getPythonPath(config_arg.root_dir)
           config_arg.settings.python.pythonPath = pythonPath
-        end
-      end,
-
-      ts_ls = function(_, opts)
-        opts.on_attach = function(client)
-          client.server_capabilities.documentFormattingProvider = false
-          client.server_capabilities.documentRangeFormattingProvider = false
         end
       end,
     },
