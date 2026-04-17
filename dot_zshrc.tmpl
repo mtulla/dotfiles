@@ -152,6 +152,9 @@ alias 101='cd ~/MIT/spring2023/6.101'
 alias 561='cd ~/MIT/spring2024/6.5610'
 alias 566='cd ~/MIT/spring2024/6.566'
 alias lg='lazygit'
+{{ if .is_dd_laptop -}}
+alias claude='lapdog claude'
+{{ end -}}
 
 # I use this to have my lazygit config in my .config directory.
 export XDG_CONFIG_HOME="$HOME/.config"
