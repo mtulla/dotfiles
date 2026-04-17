@@ -43,7 +43,10 @@ set -g set-titles-string "#{session_name}"
 bind-key , command-prompt -p "Swap with window:" "swap-window -d -t '%%'"
 
 # Set this for DD Workspaces to do git signing correctly.
+# On macOS, tmux inherits the correct launchd socket via update-environment.
+{{ if ne .chezmoi.os "darwin" -}}
 setenv -g SSH_AUTH_SOCK $HOME/.ssh/ssh_auth_sock
+{{- end }}
 set -g update-environment -r
 
 # TMUX plugins
