@@ -75,6 +75,19 @@ return {
 
   opts = {
     servers = {
+      -- vtsls — skip for projects that ship tsgo (we start tsgo manually above)
+      vtsls = {
+        root_dir = function(fname)
+          local tsgo_root = vim.fs.root(fname, function(_, path)
+            return vim.fn.filereadable(path .. "/.yarn/sdks/typescript-go/lib/tsgo") == 1
+          end)
+          if tsgo_root then
+            return nil
+          end
+          return require("lspconfig.util").root_pattern("tsconfig.json", "jsconfig.json", "package.json", ".git")(fname)
+        end,
+      },
+
       -- Simple servers with default config
       html = {},
       cssls = {},
