@@ -349,6 +349,10 @@ export SCFW_HOME="/Users/miguel.tullalizardi/.scfw"
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 
+{{ if eq .chezmoi.os "linux" -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{ end -}}
+
 # ~/.local/bin last so it takes highest precedence (pipx, chezmoi, etc.)
 export PATH="$HOME/.local/bin:$PATH"
 
