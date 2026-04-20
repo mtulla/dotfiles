@@ -274,12 +274,16 @@ export GONOSUMDB=github.com/DataDog,go.ddbuild.io
 
 # bzl reuses completion suggestions for bazel binary
 compdef _bazel bzl
+
+{{ if eq .chezmoi.os "darwin" -}}
 # BEGIN DATA-ENG-TOOLS MANAGED BLOCK
 # Add data-eng-tools binaries and helpers to the path
 export PATH="${DATADOG_ROOT}/data-eng-tools/bin:${PATH?}"
 source ${DATADOG_ROOT}/data-eng-tools/dotfiles/helpers
 export DYLD_LIBRARY_PATH=/usr/local/opt/openssl/lib
 # END DATA-ENG-TOOLS MANAGED BLOCK
+{{ end -}}
+
 # BEGIN DD-ANALYTICS MANAGED BLOCK
 # Add required dd-analytics binaries to the path
 if [ -z "$LIBRARY_PATH" ]
