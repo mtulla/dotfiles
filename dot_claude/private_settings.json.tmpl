@@ -38,7 +38,8 @@
       "Bash(gh pr list:*)",
       "Bash(gh repo view:*)",
       "Bash(gh pr checks:*)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
 {{- if .is_dd_laptop }}
   "model": "opus[1m]",
@@ -262,5 +263,7 @@
     "permissions@mat-brown-contrib": true,
     "pr-description@mat-brown-contrib": true
   },
-  "autoUpdatesChannel": "latest"
+  "autoUpdatesChannel": "latest",
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true
 }
