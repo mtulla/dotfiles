@@ -63,9 +63,9 @@ return {
     {
       "<leader>gm",
       function()
-        vim.cmd("DiffviewOpen " .. origin_default_branch())
+        vim.cmd("DiffviewOpen " .. origin_default_branch() .. "...HEAD --imply-local")
       end,
-      desc = "Diffview vs origin default branch",
+      desc = "Diffview vs origin default branch (merge-base)",
     },
   },
 }
