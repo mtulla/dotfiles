@@ -1,0 +1,7 @@
+interface:
+  display_name: "Write PR Description"
+  short_description: "Draft Miguel-style PR descriptions"
+  default_prompt: "Use $write-pr-description to draft a PR description for the current branch."
+
+policy:
+  allow_implicit_invocation: true

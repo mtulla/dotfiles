@@ -1,0 +1,7 @@
+interface:
+  display_name: "Test LLM Obs PR"
+  short_description: "Plan and run local llm-obs API tests"
+  default_prompt: "Use $test-llm-obs-pr to test the current llm-obs changes locally."
+
+policy:
+  allow_implicit_invocation: true
