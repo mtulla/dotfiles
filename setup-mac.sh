@@ -318,7 +318,17 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 16. Set zsh as default shell
+# 16. Codex CLI
+# -----------------------------------------------------------------------------
+if command_exists codex; then
+    success "Codex already installed"
+else
+    info "Installing Codex via Homebrew..."
+    brew install codex || error "Failed to install Codex"
+fi
+
+# -----------------------------------------------------------------------------
+# 17. Set zsh as default shell
 # -----------------------------------------------------------------------------
 CURRENT_SHELL="$(dscl . -read /Users/"$USER" UserShell | awk '{print $2}')"
 ZSH_PATH="$(which zsh)"
@@ -335,7 +345,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 17. Summary
+# 18. Summary
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗"

@@ -401,7 +401,19 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 16. Set zsh as default shell
+# 16. Codex CLI
+# -----------------------------------------------------------------------------
+if command_exists codex; then
+    success "Codex already installed"
+elif command_exists brew; then
+    info "Installing Codex via Homebrew..."
+    brew install codex || error "Failed to install Codex"
+else
+    info "Skipping Codex (Homebrew not available)"
+fi
+
+# -----------------------------------------------------------------------------
+# 17. Set zsh as default shell
 # -----------------------------------------------------------------------------
 CURRENT_SHELL="$(getent passwd "$(whoami)" | cut -d: -f7)"
 ZSH_PATH="$(which zsh)"
@@ -421,7 +433,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 17. Summary
+# 18. Summary
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗"
