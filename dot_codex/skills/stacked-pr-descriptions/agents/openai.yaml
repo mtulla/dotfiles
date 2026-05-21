@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stacked PR Descriptions"
+  short_description: "Format stacked PR descriptions consistently."
+  default_prompt: "Update these stacked PR descriptions with a Teddy-style numbered stack section and mark the current PR."
