@@ -1,0 +1,4 @@
+interface:
+  display_name: "Query EVP Directly"
+  short_description: "Query llmobs EVP list and count data"
+  default_prompt: "Use $query-evp-directly to query llmobs feedback events in staging."
