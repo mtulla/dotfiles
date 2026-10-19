@@ -67,22 +67,12 @@ info "Updating apt..."
 sudo apt update
 
 # -----------------------------------------------------------------------------
-# 4. Neovim PPA (apt ships 0.6.1 on 22.04, need >= 0.8 for lazy.nvim)
-# -----------------------------------------------------------------------------
-if ! grep -rq "neovim-ppa" /etc/apt/sources.list.d/ 2>/dev/null; then
-    info "Adding neovim unstable PPA..."
-    sudo add-apt-repository -y ppa:neovim-ppa/unstable
-    sudo apt-get update -qq
-fi
-
-# -----------------------------------------------------------------------------
 # 5. Core apt packages
 # -----------------------------------------------------------------------------
 APT_PACKAGES=(
     zsh
     git
     curl
-    neovim
     tmux
     fzf
     ripgrep
@@ -103,6 +93,40 @@ for pkg in "${APT_PACKAGES[@]}"; do
         sudo apt install -y "$pkg" || error "Failed to install $pkg"
     fi
 done
+
+# Install the official stable bundle: the unstable PPA can ship a runtime whose
+# vimdoc parser is missing/incompatible, breaking lazy.nvim's :helptags bootstrap.
+# Keep the binary, runtime and bundled parsers from the same release together.
+info "Installing stable Neovim..."
+NVIM_ARCH="$ARCH_DEB"
+[[ "$NVIM_ARCH" != "amd64" ]] || NVIM_ARCH="x86_64"
+NVIM_VERSION="$(github_latest_tag neovim/neovim)"
+[[ "$NVIM_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+    error "Could not determine the stable Neovim release"
+    exit 1
+}
+NVIM_TMP="$(mktemp -d)"
+trap 'rm -rf "$NVIM_TMP"' EXIT
+curl -fL --retry 3 \
+    "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-${NVIM_ARCH}.tar.gz" \
+    -o "$NVIM_TMP/nvim.tar.gz"
+tar -xzf "$NVIM_TMP/nvim.tar.gz" -C "$NVIM_TMP"
+# Exercise the failing path without loading user plugins. cquit propagates errors.
+mkdir -p "$NVIM_TMP/doc"
+printf '*dotfiles-smoke* Neovim help-tag smoke test\n' > "$NVIM_TMP/doc/smoke.txt"
+NVIM_SMOKE_DOC="$NVIM_TMP/doc" "$NVIM_TMP/nvim-linux-$NVIM_ARCH/bin/nvim" \
+    --headless --clean \
+    -c "lua local ok, err = pcall(function() vim.treesitter.query.parse('vimdoc', '(tag) @tag'); vim.cmd('helptags ' .. vim.fn.fnameescape(vim.env.NVIM_SMOKE_DOC)) end); if not ok then print(err); vim.cmd('cquit') end" \
+    -c 'qa!'
+test -s "$NVIM_TMP/doc/tags"
+NVIM_INSTALL="$HOME/.local/opt/nvim-$NVIM_VERSION-$NVIM_ARCH"
+mkdir -p "$NVIM_INSTALL" "$HOME/.local/bin"
+cp -a "$NVIM_TMP/nvim-linux-$NVIM_ARCH/." "$NVIM_INSTALL/"
+ln -sfn "$NVIM_INSTALL/bin/nvim" "$HOME/.local/bin/nvim"
+export PATH="$HOME/.local/bin:$PATH"
+rm -rf "$NVIM_TMP"
+trap - EXIT
+success "Neovim $NVIM_VERSION installed (including runtime and parsers)"
 
 # -----------------------------------------------------------------------------
 # 6. Build dependencies (needed for pyenv, treesitter, etc.)
