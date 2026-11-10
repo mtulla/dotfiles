@@ -5,6 +5,17 @@
 - Test changes with `./test-setup.sh --no-cache` (Docker-based).
 - Don't assume tools like `add-apt-repository` exist on minimal systems.
 
+# Review code and pull requests
+
+- When I ask to "review and QA" a web-ui pull request, browser QA is mandatory.
+  Prepare the review in parallel, but submit it only after QA is complete as
+  `frontend-qa` defines it.
+- When I ask for a pull request review, submit an actual GitHub review: batch
+  all inline findings into it, with an overall body summarizing the findings
+  and the QA performed.
+- Submit a Comment review when there are actionable findings and an Approve
+  review when there are none. Never submit Request changes unless I ask.
+
 # Browser testing (web-ui)
 
 **Every web-ui change must be verified in a real browser before I report back or
@@ -15,10 +26,24 @@ surfaces and compare them.
 **Always include screenshots** — in the PR description, and when reporting back
 in chat. Before/after when fixing a visual or data defect.
 
-**Always run the browser detached and headed**, so Miguel can use the same
-browser. Never headless, never blocking-mode.
+## Use frontend-qa
 
-## Setup
+- Browser-QA every web-ui change that can change what renders.
+- For any Datadog UI browser work, load the `frontend-qa` skill and follow it,
+  instead of a repository's browser-use.md. `configure-browser` is the only
+  way to sign in: never drive a sign-in page or ask me to log in.
+- On my laptop, run its session headed, so I can use the same browser. On a
+  Datadog Workspace (`IN_WORKSPACE=1`) there is no display: follow its
+  `references/workspace.md`.
+- One exception to `frontend-qa`: for Datadog Feature Flags, use the
+  `dd_set_flag_<flag>` URL param or the `dd.dd_flag.overrides` localStorage key
+  (see **Feature flags** below). `frontend-qa`'s `config_<flag>` param doesn't
+  reach the Feature Flags SDK.
+
+## Manual setup (laptop fallback)
+
+Use this only on my laptop, and only when `frontend-qa` isn't available or I ask
+for it.
 
 One-time installs:
 
