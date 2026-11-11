@@ -35,6 +35,16 @@ in chat. Before/after when fixing a visual or data defect.
 - On my laptop, run its session headed, so I can use the same browser. On a
   Datadog Workspace (`IN_WORKSPACE=1`) there is no display: follow its
   `references/workspace.md`.
+- On a Datadog Workspace, QA my own changes on the workspace dev server
+  (`https://app-dev-local-<workspace>-<port>.datadoghq.com`, the exact link
+  `yarn dev` prints), not the hash preview. Pass that link as
+  `configure-browser --url`: v0.0.15 and newer sign that host in themselves, so
+  don't copy cookies by hand, whatever `frontend-qa`'s `references/workspace.md`
+  says about v0.0.12. Keep using the hash preview for pull requests I didn't
+  author.
+- On a workspace, start `agent-browser` with `TZ` set to my laptop's time zone
+  too, not only `configure-browser`. Otherwise Datadog shows an "Update your
+  time zone" modal: close it with its X, never with either of its buttons.
 - One exception to `frontend-qa`: for Datadog Feature Flags, use the
   `dd_set_flag_<flag>` URL param or the `dd.dd_flag.overrides` localStorage key
   (see **Feature flags** below). `frontend-qa`'s `config_<flag>` param doesn't
