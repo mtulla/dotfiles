@@ -246,25 +246,74 @@
 {{- end }}
   "statusLine": {
     "type": "command",
-    "command": "npx -y ccstatusline@latest",
+    "command": "{{ if .is_dd_laptop }}{{ .chezmoi.homeDir }}/.local/share/aigw-openweights/app/.venv/bin/aigw-openweights-statusline --delegate 'npx -y ccstatusline@latest'{{ else }}npx -y ccstatusline@latest{{ end }}",
     "padding": 0
   },
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": true,
-    "go-code-reviewer@datadog-claude-plugins": true,
     "feature-dev@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "atlassian@claude-plugins-official": true,
+    "ponytail@ponytail": true{{ if .is_dd_laptop }},
+    "go-code-reviewer@datadog-claude-plugins": true,
     "osx-notifications@datadog-claude-plugins": true,
+    "deveng@datadog-claude-plugins": true,
     "web-ui-skills@mat-brown-contrib": true,
     "common-mistakes@mat-brown-contrib": true,
     "permissions@mat-brown-contrib": true,
-    "pr-description@mat-brown-contrib": true
+    "pr-description@mat-brown-contrib": true,
+    "trajectory-security@trajectory": true,
+    "trajectory@trajectory": true,
+    "slack-relay@dogpark": true{{ end }}
   },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "dietrichgebert/ponytail"
+      }
+    }{{ if .is_dd_laptop }},
+    "datadog-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "ddoghq/claude-marketplace"
+      }
+    },
+    "mat-brown-contrib": {
+      "source": {
+        "source": "github",
+        "repo": "DataDog/mat-brown-claude-plugins"
+      }
+    },
+    "trajectory": {
+      "source": {
+        "source": "directory",
+        "path": "{{ .chezmoi.homeDir }}/.trajectory/claude-marketplace"
+      }
+    },
+    "dogpark": {
+      "source": {
+        "source": "directory",
+        "path": "{{ .chezmoi.homeDir }}/.local/share/dogpark/claude-marketplace"
+      }
+    }{{ end }}
+  },
+{{- if .is_dd_laptop }}
+  "pluginConfigs": {
+    "slack-relay@dogpark": {
+      "options": {
+        "auto_allow": true
+      }
+    }
+  },
+{{- end }}
   "autoUpdatesChannel": "latest",
   "skipDangerousModePermissionPrompt": true,
+{{- if .is_dd_laptop }}
+  "skipWorkflowUsageWarning": true,
+{{- end }}
   "editorMode": "vim",
   "skipAutoPermissionPrompt": true
 }
