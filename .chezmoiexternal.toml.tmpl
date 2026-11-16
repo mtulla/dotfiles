@@ -51,8 +51,11 @@
     path = "lazygit"
     executable = true
 
+{{/* dogbrew links ~/.local/bin/bazel to its own bzl wrapper */ -}}
+{{ if not (stat "/opt/dogbrew/bin/bzl") -}}
 [".local/bin/bazel"]
     type = "file"
     url = "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-{{ .chezmoi.arch }}"
     executable = true
+{{ end -}}
 {{ end -}}

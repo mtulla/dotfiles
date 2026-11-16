@@ -4,3 +4,7 @@ setup-linux.sh
 setup-mac.sh
 README.md
 CLAUDE.md
+
+# Codex manages its own bundled system skills
+.codex/skills/.system
+.codex/skills/.system/**

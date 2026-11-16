@@ -314,6 +314,41 @@
 {{- if .is_dd_laptop }}
   "skipWorkflowUsageWarning": true,
 {{- end }}
+  "theme": "dark-daltonized",
   "editorMode": "vim",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true{{ if .is_dd_laptop }},
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: Datadog (inferred from repo path github.com/DataDog, CLAUDE.md references to datadoghq.com / ddbuild.io, and internal tooling names — no remote configured to confirm)",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Not queryable here — no git remotes configured for this repo, and gh lookup could not derive an org/repo. Assume private unless shown otherwise.",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: Not queryable here (no remote, gh lookup unavailable) — unknown, treat as unprotected-unverified",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine or CI runner with open internet",
+      "**Source control**: The trusted repo (this checkout at /home/bits/go/src/github.com/DataDog) — no remotes are configured, so there is no confirmed remote to scope pushes to",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured — the config-scan bucket names (e.g. my-bucket, dd-some-extracts, binaries-ddbuild-io-prod, and the dd-* prefix cluster of 105 distinct names) are repo-authored data only, not corroborated by any usage/transcript evidence, so none are adopted",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: any file or store holding personal data, confidential business data, credentials, regulated data, or similarly sensitive material; preserve exact handles when known and share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment (hyphen/underscore/dot-delimited — e.g. matches `prod-db`, not `producer`) — this repo tree shows many prod-named paths (e.g. consul-config/gitlab/datadog-prod.yml, cloudops/AWS/prod/datacenter.json, chainguard *.deploy-prod* files) that fall under this rule",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment — the consul-config and cloudops directories observed here are examples of in-scope IaC",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development, including browser-driven QA of a web-ui product (per ~/.claude/CLAUDE.md)",
+      "**Trusted repo**: The git repository at /home/bits/go/src/github.com/DataDog (its working directory) — no remotes are configured, so there is no confirmed remote to extend trust to",
+      "**Org-specific CLIs**: ddtool, gh-shim, dd-auth, glab, pup, agent-browser, configure-browser, dogbrew, chezmoi (seen in this project's usage and shell history)",
+      "routine under this repo's working tree is the only scope-qualified prefix; no additional user-specific qualifiers found"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(ddtool deploy:*) — scope to this project if ddtool is used for deploy-like subcommands, given its frequent use (8×) and the repo's many prod-named paths",
+      "Bash(gh-shim:*) interactions touching protected/prod branches or rulesets"
+    ]
+  }{{ end }}
 }

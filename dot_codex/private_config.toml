@@ -1,5 +1,7 @@
 approvals_reviewer = "user"
 service_tier = "fast"
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
 [projects."/home/bits/go/src/github.com/DataDog/dd-source"]
 trust_level = "trusted"
 
@@ -23,9 +25,11 @@ status_line = [
 ]
 status_line_use_colors = true
 vim_mode_default = true
+screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
+gpt-6-astra = 1
 
 [plugins."atlassian-rovo@openai-curated"]
 enabled = true
@@ -54,6 +58,15 @@ enabled = true
 [plugins."dd@datadog-claude-plugins"]
 enabled = true
 
+[plugins."trajectory@trajectory"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."slack-relay@dogpark"]
+enabled = true
+
 [features]
 terminal_resize_reflow = true
 
@@ -62,3 +75,113 @@ last_updated = "2026-05-14T21:20:03Z"
 last_revision = "3cf73c5a1fe9ab4cb81de8a59cdd3bff3047f262"
 source_type = "git"
 source = "https://github.com/DataDog/claude-marketplace.git"
+
+[marketplaces.trajectory]
+source_type = "local"
+source = "/home/bits/.trajectory/codex-marketplace"
+
+[marketplaces.openai-bundled]
+source_type = "local"
+source = "/home/bits/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.dogpark]
+source_type = "local"
+source = "/home/bits/.local/share/dogpark/codex-marketplace"
+
+[mcp_servers.trajectory]
+command = "/home/bits/.trajectory/bin/trajectory"
+args = ["mcp"]
+
+[mcp_servers.trajectory.env]
+TRAJECTORY_HOME = "/home/bits/.trajectory"
+
+[hooks.state]
+
+[hooks.state."trajectory@trajectory:hooks.json:pre_tool_use:0:0"]
+enabled = true
+trusted_hash = "sha256:e0756da26fd9723381161e28bfc5cf03769ad20dfc72ac28af5d520bbe09fea4"
+
+[hooks.state."trajectory@trajectory:hooks.json:pre_tool_use:1:0"]
+enabled = false
+trusted_hash = "sha256:1f3c9883296d9ed709ed7c469d27ef541b39914eb705104fb9078470fee4eb07"
+
+[hooks.state."trajectory@trajectory:hooks.json:permission_request:0:0"]
+enabled = false
+trusted_hash = "sha256:8390ac0fbfc3fec6811df94f73ce57c5d76fb0df9f46e0891a7587943a4e20ba"
+
+[hooks.state."trajectory@trajectory:hooks.json:post_tool_use:0:0"]
+enabled = true
+trusted_hash = "sha256:be398769070c663d7768f617f64665e433364333d5306c03015af3851640dec3"
+
+[hooks.state."trajectory@trajectory:hooks.json:post_tool_use:1:0"]
+enabled = false
+trusted_hash = "sha256:49bd3592fc498160353d71decae8a6e257bfcf1c8ca9ea3bdc5d237e3a27359f"
+
+[hooks.state."trajectory@trajectory:hooks.json:pre_compact:0:0"]
+enabled = false
+trusted_hash = "sha256:95fdfa38fa1faa90fe93ce25c4f0da6e1e3604b6ccaf623428e5fb695580f152"
+
+[hooks.state."trajectory@trajectory:hooks.json:post_compact:0:0"]
+enabled = false
+trusted_hash = "sha256:30f0dd2f987833415b83f5664e97a0ba8102b82511716d22fb4eaa2751f7d5f3"
+
+[hooks.state."trajectory@trajectory:hooks.json:session_start:0:0"]
+enabled = true
+trusted_hash = "sha256:e6e4488000f5a688b13916cddc5a33d989f9ca75795012974c9417bc821c207d"
+
+[hooks.state."trajectory@trajectory:hooks.json:user_prompt_submit:0:0"]
+enabled = true
+trusted_hash = "sha256:d9a0c3adbe70f74fa6ec3aeaefcd9f3dedef9995692d00f99c596f8e857acd43"
+
+[hooks.state."trajectory@trajectory:hooks.json:subagent_start:0:0"]
+enabled = false
+trusted_hash = "sha256:710528289c7093cb5543a33f9ff3edd1bca8e750712235a91f7d830782893763"
+
+[hooks.state."trajectory@trajectory:hooks.json:subagent_stop:0:0"]
+enabled = false
+trusted_hash = "sha256:eef8ed61fb89633a1de9f77f2fd18320541c82dca69018bcf8ac6bdf5f9ce04b"
+
+[hooks.state."trajectory@trajectory:hooks.json:stop:0:0"]
+enabled = true
+trusted_hash = "sha256:7c97fc3bde8291f39951746c12374a9d5ae159f97b13e9afb2c9ba079fb4a76f"
+
+[hooks.state."trajectory@trajectory:hooks.json:session_end:0:0"]
+enabled = true
+trusted_hash = "sha256:f8faed3e1f0357860850dc49e9eb82eae45e85a5940377f3ec40e2a0bd716509"
+
+[hooks.state."dd@datadog-claude-plugins:hooks/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:a506e76ca69c4e69723a414d9251cf4b02db5b0432058c64ca3f6c8684786c73"
+
+[hooks.state."dd@datadog-claude-plugins:hooks/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:6a58e770acd72ebdd9038420c45d024a9b1478a89cc7145d5e1751792216b884"
+
+[mcp_servers.atlassian]
+url = "http://127.0.0.1:43118/wmux/mcp/atlassian/atlassian/v1/mcp/authv2"
+startup_timeout_sec = 120.0
+
+[mcp_servers.datadog-ddstaging]
+url = "http://127.0.0.1:43118/wmux/mcp/datadog/datadog-ddstaging/v1/mcp?toolsets=all,watchdog,signals"
+
+[mcp_servers.datadog-prod]
+url = "http://127.0.0.1:43118/wmux/mcp/datadog/datadog-prod/v1/mcp?toolsets=all,watchdog,signals"
+
+[mcp_servers.datadog-staging]
+url = "http://127.0.0.1:43118/wmux/mcp/datadog/datadog-staging/v1/mcp?toolsets=all,watchdog,signals"
+
+[mcp_servers.gmail]
+url = "http://127.0.0.1:43118/wmux/mcp/gmail/gmail/mcp"
+
+[mcp_servers.google-calendar]
+url = "http://127.0.0.1:43118/wmux/mcp/google-calendar/google-calendar/mcp"
+
+[mcp_servers.google-workspace]
+url = "http://127.0.0.1:43118/wmux/mcp/google-workspace/google-workspace/mcp"
+
+[mcp_servers.linear]
+url = "http://127.0.0.1:43118/wmux/mcp/linear/linear/mcp"
+
+[mcp_servers.saas-atlassian]
+url = "http://127.0.0.1:43118/wmux/mcp/saas-atlassian/saas-atlassian/mcp"
+
+[mcp_servers.slack]
+url = "http://127.0.0.1:43118/wmux/mcp/slack/slack/mcp"
